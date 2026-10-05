@@ -1,6 +1,8 @@
 # Ptyxis-TC
 
-Unofficial modification of Ptyxis 50.1 by Bob Czys, October 5, 2026.
+Unofficial modification by Bob Czys, October 5, 2026.
+Started on Ptyxis 50.1; main includes newer upstream history and currently
+reports version 50.2. The installation prefix retains its original name.
 Upstream: https://gitlab.gnome.org/chergert/ptyxis
 
 ## Features
@@ -21,6 +23,14 @@ Original copyright and license notices are retained.
 Install dependencies:
 
     sudo dnf install meson ninja-build gcc gettext-devel glib2-devel gtk4-devel libadwaita-devel vte291-gtk4-devel json-glib-devel libportal-devel libportal-gtk4-devel desktop-file-utils
+
+Clone the custom repository:
+
+    git clone git@github.com:greenfinch628/ptyxis-tc.git
+    cd ptyxis-tc
+
+Requires Meson >= 1.0, GLib >= 2.80, GTK >= 4.14, libadwaita >= 1.8,
+JSON-GLib >= 1.6, and VTE GTK4 >= 0.79.
 
 Run these commands from the repository directory:
 
@@ -52,6 +62,11 @@ The custom app uses separate settings from Fedora's regular Ptyxis.
 Originally tested on Fedora 44 x86_64 with GTK 4.22.5 and libadwaita 1.9.4.
 Tab styling uses libadwaita internals and deprecated GTK style APIs;
 other versions require verification.
+
+The Meson test command runs the upstream test suite. The custom test C files
+and helper scripts are archived validation fixtures; the helper scripts expect
+the original archive layout (`build/`, `extension/`, and `link-command.txt`)
+and are not directly runnable from this checkout.
 
 See ARCHIVE-NOTES.md for detailed behavior and original validation.
 Its archive installation instructions do not apply to this Git checkout.
