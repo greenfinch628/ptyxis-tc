@@ -812,6 +812,10 @@
   </menu>
   <menu id="tab_menu">
     <section>
+      <item><attribute name="label">Tab Background Color…</attribute><attribute name="action">win.tab-color</attribute></item>
+      <item><attribute name="label">Automatic Tab Color</attribute><attribute name="action">win.tab-color-auto</attribute></item>
+    </section>
+    <section>
       <item>
         <attribute name="id">move-tab-left</attribute>
         <attribute name="label" translatable="yes">Move _Left</attribute>

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Ptyxis-TC
+Comment=Terminal with automatic hostname tab colors
+Exec=/opt/ptyxis-tab-colors-50.1/bin/ptyxis-tab-colors
+Icon=org.gnome.Ptyxis.TabColors
+Terminal=false
+Categories=GNOME;GTK;System;TerminalEmulator;
+StartupNotify=true
+StartupWMClass=org.gnome.Ptyxis.TabColors

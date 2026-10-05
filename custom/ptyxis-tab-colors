@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export GSETTINGS_SCHEMA_DIR=/opt/ptyxis-tab-colors-50.1/share/glib-2.0/schemas
+export XDG_DATA_DIRS="/opt/ptyxis-tab-colors-50.1/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+exec /opt/ptyxis-tab-colors-50.1/bin/ptyxis "$@"

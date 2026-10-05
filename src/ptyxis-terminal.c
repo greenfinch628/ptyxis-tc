@@ -265,6 +265,19 @@ ptyxis_terminal_setup_context_menu (VteTerminal           *terminal,
     gtk_widget_set_halign (GTK_WIDGET (self->popover), GTK_ALIGN_START);
 }
 
+/* Use the standard clipboard; clear selection so the next click pastes. */
+static void
+ptyxis_terminal_right_click_clipboard (PtyxisTerminal *self)
+{
+  if (vte_terminal_get_has_selection (VTE_TERMINAL (self)))
+    {
+      gtk_widget_activate_action (GTK_WIDGET (self), "clipboard.copy", NULL);
+      vte_terminal_unselect_all (VTE_TERMINAL (self));
+    }
+  else
+    ptyxis_terminal_paste (self);
+}
+
 static void
 ptyxis_terminal_capture_click_pressed_cb (PtyxisTerminal  *self,
                                           int              n_press,
@@ -286,6 +299,13 @@ ptyxis_terminal_capture_click_pressed_cb (PtyxisTerminal  *self,
   event = gtk_event_controller_get_current_event (GTK_EVENT_CONTROLLER (click));
   state = gdk_event_get_modifier_state (event) & gtk_accelerator_get_default_mod_mask ();
   button = gtk_gesture_single_get_current_button (GTK_GESTURE_SINGLE (click));
+
+  if (button == GDK_BUTTON_SECONDARY && state == 0)
+    {
+      ptyxis_terminal_right_click_clipboard (self);
+      gtk_gesture_set_state (GTK_GESTURE (click), GTK_EVENT_SEQUENCE_CLAIMED);
+      return;
+    }
 
   hyperlink = vte_terminal_check_hyperlink_at (VTE_TERMINAL (self), x, y);
   match = vte_terminal_check_match_at (VTE_TERMINAL (self), x, y, &tag);

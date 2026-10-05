@@ -84,6 +84,7 @@ struct _PtyxisWindow
   GtkBox                *visual_bell;
   GPropertyAction       *interface_style_action;
 
+  guint                  tab_color_source;
   guint                  visual_bell_source;
   guint                  focus_active_tab_source;
 
@@ -97,6 +98,8 @@ struct _PtyxisWindow
 };
 
 G_DEFINE_FINAL_TYPE (PtyxisWindow, ptyxis_window, ADW_TYPE_APPLICATION_WINDOW)
+
+#include "ptyxis-tab-colors.h"
 
 enum {
   PROP_0,
@@ -1944,6 +1947,7 @@ ptyxis_window_dispose (GObject *object)
   PtyxisWindow *self = (PtyxisWindow *)object;
 
   self->disposed = TRUE;
+  g_clear_handle_id (&self->tab_color_source, g_source_remove);
 
   g_action_map_remove_action (G_ACTION_MAP (self), "interface-style");
 
@@ -2114,6 +2118,8 @@ ptyxis_window_class_init (PtyxisWindowClass *klass)
   gtk_widget_class_install_action (widget_class, "tab.focus", "i", ptyxis_window_tab_focus_action);
   gtk_widget_class_install_action (widget_class, "page.next", NULL, ptyxis_window_page_next_action);
   gtk_widget_class_install_action (widget_class, "page.previous", NULL, ptyxis_window_page_previous_action);
+  gtk_widget_class_install_action (widget_class, "win.tab-color", NULL, color_tab_action);
+  gtk_widget_class_install_action (widget_class, "win.tab-color-auto", NULL, color_tab_action);
   gtk_widget_class_install_action (widget_class, "win.set-title", NULL, ptyxis_window_set_title_action);
   gtk_widget_class_install_action (widget_class, "win.set-profile", NULL, ptyxis_window_set_profile_action);
   gtk_widget_class_install_action (widget_class, "win.search", NULL, ptyxis_window_search_action);
@@ -2182,6 +2188,7 @@ ptyxis_window_init (PtyxisWindow *self)
   self->shortcuts = g_object_ref (ptyxis_application_get_shortcuts (PTYXIS_APPLICATION_DEFAULT));
 
   gtk_widget_init_template (GTK_WIDGET (self));
+  self->tab_color_source = g_timeout_add (500, color_tabs_refresh, self);
 
   default_icon = g_themed_icon_new ("utilities-terminal-symbolic");
   adw_tab_view_set_default_icon (self->tab_view, default_icon);
