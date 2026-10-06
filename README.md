@@ -5,6 +5,21 @@ hostname-based tab colors, manual tab colors, and right-click copy/paste.
 
 ![Ptyxis-TC showing blue and green tab backgrounds](custom/screenshots/tab-colors.png)
 
+## Project status and disclaimer
+
+Ptyxis-TC was created for personal use and is shared as-is. No additional
+features are planned. The RPM and DEB packages are provided for convenience.
+
+There is no fixed maintenance or release schedule. Updates to this fork and
+its packages will not necessarily follow releases of upstream Ptyxis, and
+upstream bug fixes or security fixes may not be included promptly, or at all.
+Support and continued compatibility with future distribution or library
+versions are not guaranteed.
+
+This is an unofficial project and is not affiliated with or endorsed by the
+upstream Ptyxis developers. It is provided without warranty, as described in
+the GNU General Public License; see [COPYING](COPYING).
+
 ## Features
 
 - Automatic tab background colors based on hostnames and SSH aliases.
@@ -49,6 +64,33 @@ meson test -C build-tc --print-errorlogs
 The installation prefix retains its original `50.1` name for compatibility
 with existing launchers. See [custom/README.md](custom/README.md) for source
 installation, dependency versions, configuration, and compatibility details.
+
+## Ubuntu 26.04 package
+
+The validated Ubuntu 26.04 amd64 DEB is available in
+[packages/ubuntu-26.04/](packages/ubuntu-26.04/) and through
+[GitHub Releases](https://github.com/greenfinch628/ptyxis-tc/releases).
+To install the package from this checkout:
+
+```bash
+sudo apt install ./packages/ubuntu-26.04/ptyxis-tc_50.2-1ubuntu26.04.1_amd64.deb
+```
+
+APT resolves the required Ubuntu dependencies. Ubuntu 24.04's stock
+libadwaita and VTE libraries do not meet this version's requirements.
+Close and reopen Ptyxis-TC after installation or upgrading. Launch it with
+`ptyxis-tc`, `ptyxis-tab-colors`, or the Ptyxis-TC application menu entry.
+The package preserves the separate application ID and settings.
+
+Verify the package from the repository root:
+
+```bash
+(cd packages/ubuntu-26.04 && sha256sum -c SHA256SUMS)
+```
+
+Matching Debian source files and the Ubuntu build report are available on
+the release page. The package was built from commit
+`3f30ed408067e9303c7316c3e8e54333407b8853`.
 
 ## Local RPM on Scopuli
 
