@@ -11,6 +11,9 @@ Upstream: https://gitlab.gnome.org/chergert/ptyxis
 - Manual tab colors through the tab context menu.
 - Manual colors retained during session restoration.
 - Right-click copies selected text; without a selection, it pastes.
+- Enable or disable right-click copy/paste in Preferences → Behavior → Mouse.
+  It is enabled by default; disabling it restores the normal right-click context menu.
+  The preference is saved across restarts.
 - Shift+right-click opens the original terminal context menu.
 
 ## License

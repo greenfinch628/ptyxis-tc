@@ -214,6 +214,12 @@
       <description>Default window size when restore-window-size is not true.</description>
     </key>
 
+    <key name="right-click-copy-paste" type="b">
+      <default>true</default>
+      <summary>Right-click copy and paste</summary>
+      <description>Copy selected text or paste the clipboard on right-click. When disabled, right-click opens the normal context menu.</description>
+    </key>
+
     <key name="toast-on-copy-clipboard" type="b">
       <default>true</default>
       <summary>Toast on Copy Clipboard</summary>

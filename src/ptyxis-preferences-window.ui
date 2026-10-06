@@ -397,6 +397,17 @@
         </child>
         <child>
           <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes">Mouse</property>
+            <child>
+              <object class="AdwSwitchRow" id="right_click_copy_paste">
+                <property name="title" translatable="yes">Right-Click Copy and Paste</property>
+                <property name="subtitle" translatable="yes">Copy selected text or paste when nothing is selected. Turn off to open the context menu. Shift+right-click always opens the context menu.</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup">
             <property name="title" translatable="yes">Accessibility</property>
             <child>
               <object class="AdwSwitchRow" id="enable_a11y">

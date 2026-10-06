@@ -26,6 +26,9 @@ the GNU General Public License; see [COPYING](COPYING).
 - Manual tab colors through the tab context menu.
 - Manual colors retained during session restoration.
 - Right-click copies selected text and clears the selection; with no selection, it pastes.
+- Enable or disable right-click copy/paste in Preferences → Behavior → Mouse.
+  It is enabled by default; disabling it restores the normal right-click context menu.
+  The preference is saved across restarts.
 - Shift+right-click opens the original terminal context menu.
 - Separate application ID and settings, so it can coexist with Fedora's regular Ptyxis.
 
@@ -73,7 +76,7 @@ The validated Ubuntu 26.04 amd64 DEB is available in
 To install the package from this checkout:
 
 ```bash
-sudo apt install ./packages/ubuntu-26.04/ptyxis-tc_50.2-1ubuntu26.04.1_amd64.deb
+sudo apt install ./packages/ubuntu-26.04/ptyxis-tc_50.2-2ubuntu26.04.1_amd64.deb
 ```
 
 APT resolves the required Ubuntu dependencies. Ubuntu 24.04's stock
@@ -89,8 +92,7 @@ Verify the package from the repository root:
 ```
 
 Matching Debian source files and the Ubuntu build report are available on
-the release page. The package was built from commit
-`3f30ed408067e9303c7316c3e8e54333407b8853`.
+the release page. See the release notes for the source commit and package build details.
 
 ## Local RPM on Scopuli
 
@@ -99,7 +101,7 @@ RPM artifacts and build inputs in that directory are excluded from Git and
 are not included in a fresh clone.
 
 ```bash
-sudo dnf install ~/ptyxis-tc/local-rpm/RPMS/x86_64/ptyxis-tc-50.2-1.fc44.x86_64.rpm
+sudo dnf install ~/ptyxis-tc/local-rpm/RPMS/x86_64/ptyxis-tc-50.2-2.fc44.x86_64.rpm
 ```
 
 Close and reopen Ptyxis-TC after upgrading. Launch it from the application

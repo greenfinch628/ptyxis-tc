@@ -300,7 +300,10 @@ ptyxis_terminal_capture_click_pressed_cb (PtyxisTerminal  *self,
   state = gdk_event_get_modifier_state (event) & gtk_accelerator_get_default_mod_mask ();
   button = gtk_gesture_single_get_current_button (GTK_GESTURE_SINGLE (click));
 
-  if (button == GDK_BUTTON_SECONDARY && state == 0)
+  if (button == GDK_BUTTON_SECONDARY && state == 0 &&
+      g_settings_get_boolean (ptyxis_settings_get_settings (
+                                ptyxis_application_get_settings (PTYXIS_APPLICATION_DEFAULT)),
+                              "right-click-copy-paste"))
     {
       ptyxis_terminal_right_click_clipboard (self);
       gtk_gesture_set_state (GTK_GESTURE (click), GTK_EVENT_SEQUENCE_CLAIMED);

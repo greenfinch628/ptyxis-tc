@@ -66,6 +66,7 @@ struct _PtyxisPreferencesWindow
   GListModel           *cursor_shapes;
   AdwComboRow          *delete_binding;
   AdwSwitchRow         *enable_a11y;
+  AdwSwitchRow         *right_click_copy_paste;
   GListModel           *erase_bindings;
   AdwComboRow          *exit_action;
   GListModel           *exit_actions;
@@ -827,6 +828,10 @@ ptyxis_preferences_window_constructed (GObject *object)
                            G_CONNECT_SWAPPED);
   ptyxis_preferences_window_notify_default_profile_cb (self, NULL, app);
 
+  g_settings_bind (gsettings, "right-click-copy-paste",
+                   self->right_click_copy_paste, "active",
+                   G_SETTINGS_BIND_DEFAULT);
+
   g_settings_bind_with_mapping (gsettings,
                                 PTYXIS_SETTING_KEY_NEW_TAB_POSITION,
                                 self->tab_position,
@@ -1149,6 +1154,7 @@ ptyxis_preferences_window_class_init (PtyxisPreferencesWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, custom_links_list_box);
   gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, delete_binding);
   gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, enable_a11y);
+  gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, right_click_copy_paste);
   gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, erase_bindings);
   gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, exit_action);
   gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, exit_actions);
