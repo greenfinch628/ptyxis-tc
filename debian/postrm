@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+case "$1" in
+    remove|purge) rm -f /opt/ptyxis-tab-colors-50.1/share/glib-2.0/schemas/gschemas.compiled ;;
+esac
+#DEBHELPER#

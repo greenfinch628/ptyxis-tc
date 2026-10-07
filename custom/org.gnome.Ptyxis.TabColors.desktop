@@ -1,9 +1,9 @@
 [Desktop Entry]
 Type=Application
-Name=Ptyxis-TC
+Name=ptyxis-tc
 Comment=Terminal with automatic hostname tab colors
 Exec=/opt/ptyxis-tab-colors-50.1/bin/ptyxis-tab-colors
-Icon=org.gnome.Ptyxis.TabColors
+Icon=ptyxis-tc-blue-border-gray3
 Terminal=false
 Categories=GNOME;GTK;System;TerminalEmulator;
 StartupNotify=true

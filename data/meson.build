@@ -1,4 +1,6 @@
-if app_is_builder
+if app_id == 'org.gnome.Ptyxis.TabColors'
+  app_name = 'ptyxis-tc'
+elif app_is_builder
   app_name = 'Builder Terminal'
 elif app_is_generic
   app_name = 'Terminal'
@@ -8,6 +10,7 @@ endif
 
 desktop_config = configuration_data()
 desktop_config.set('APP_ID', app_id)
+desktop_config.set('APP_ICON_NAME', app_icon_name)
 desktop_config.set('APP_NAME', app_name)
 desktop_file_in = configure_file(
           input: 'org.gnome.Ptyxis.desktop.in.in',

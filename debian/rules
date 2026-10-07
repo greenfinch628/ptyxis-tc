@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+PREFIX = /opt/ptyxis-tab-colors-50.1
+
+%:
+	dh $@ --buildsystem=meson --builddirectory=build-deb
+
+override_dh_auto_configure:
+	dh_auto_configure -- --prefix=$(PREFIX) --bindir=bin --libexecdir=libexec --datadir=share --localedir=share/locale --buildtype=debugoptimized -Dapp-id=org.gnome.Ptyxis.TabColors -Dgschema-id=org.gnome.Ptyxis.TabColors -Dgschema-path=/org/gnome/Ptyxis/TabColors/
+
+override_dh_auto_install:
+	dh_auto_install --destdir=debian/ptyxis-tc
+	install -m755 custom/ptyxis-tab-colors debian/ptyxis-tc$(PREFIX)/bin/ptyxis-tab-colors
+	install -Dm755 custom/ptyxis-tab-colors debian/ptyxis-tc/usr/bin/ptyxis-tc
+	install -Dm755 custom/ptyxis-tab-colors debian/ptyxis-tc/usr/bin/ptyxis-tab-colors
+	install -Dm644 custom/org.gnome.Ptyxis.TabColors.desktop debian/ptyxis-tc/usr/share/applications/org.gnome.Ptyxis.TabColors.desktop
+	custom/install-icons.sh debian/ptyxis-tc/usr/share
+	rm -f debian/ptyxis-tc$(PREFIX)/share/glib-2.0/schemas/gschemas.compiled debian/ptyxis-tc$(PREFIX)/share/icons/hicolor/icon-theme.cache debian/ptyxis-tc$(PREFIX)/share/applications/mimeinfo.cache

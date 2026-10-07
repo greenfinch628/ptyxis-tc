@@ -1,0 +1,2 @@
+# Private prefix intentionally retained for compatibility with the RPM and source launcher.
+ptyxis-tc: dir-or-file-in-opt [opt/*]

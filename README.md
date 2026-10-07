@@ -111,6 +111,43 @@ Close and reopen Ptyxis-TC after upgrading. Launch it from the application
 menu or run `ptyxis-tc` (also available as `ptyxis-tab-colors`).
 The local `local-rpm/README.md` contains RPM rebuild instructions.
 
+## Application icons
+
+The launcher displays **ptyxis-tc** and uses
+`ptyxis-tc-blue-border-gray3.svg` by default. Additional custom icons are
+installed alongside the original upstream full-color and symbolic icons.
+The application ID remains `org.gnome.Ptyxis.TabColors`.
+
+The seven custom variants are in [`data/icons/`](data/icons/):
+`ptyxis-tc-blue`, `ptyxis-tc-blue-bg1`, `ptyxis-tc-blue-border`, and
+`ptyxis-tc-blue-border-gray0`, `gray2`, `gray3`, and `gray4` (each gray
+variant has the full `ptyxis-tc-blue-border-` filename prefix).
+
+RPM and DEB packages install the custom SVGs, with their distinct filenames,
+under `/usr/share/icons/hicolor/scalable/apps/` and
+`/opt/ptyxis-tab-colors-50.1/share/icons/hicolor/scalable/apps/`.
+The original upstream icon remains available as
+`org.gnome.Ptyxis.TabColors.svg`; the preserved upstream symbolic icon is
+`org.gnome.Ptyxis.TabColors-symbolic.svg` in the corresponding
+`hicolor/symbolic/apps/` directories. Source installations also place the
+icons under the installation prefix; the custom installation instructions
+install a user-local set in `~/.local/share/icons/hicolor/`.
+
+To choose another launcher icon, copy the installed desktop file to
+`~/.local/share/applications/org.gnome.Ptyxis.TabColors.desktop` and edit
+its `Icon=` line. Use the icon filename without `.svg`, for example
+`Icon=ptyxis-tc-blue-border-gray2`, or use
+`Icon=org.gnome.Ptyxis.TabColors` for the original upstream artwork.
+Keep `Exec=` and the application identity unchanged. A user-local desktop
+file takes precedence and survives package upgrades. Refresh the launcher
+or sign out and back in if your desktop caches the previous icon. This
+changes the launcher icon; the application's built-in icon remains gray 3.
+
+The package build recipes are now tracked in [`packaging/rpm/`](packaging/rpm/)
+and [`debian/`](debian/); see [packaging/README.md](packaging/README.md) for
+rebuild instructions. Previously published packages remain unchanged;
+these icon defaults apply to new builds using the updated recipes.
+
 ## Hostname colors
 
 Create or edit `~/.config/org.gnome.Ptyxis.TabColors/tab-colors.ini`.

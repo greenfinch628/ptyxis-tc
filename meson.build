@@ -40,6 +40,11 @@ if app_schema_id == ''
   endif
 endif
 
+app_icon_name = app_id
+if app_id == 'org.gnome.Ptyxis.TabColors'
+  app_icon_name = 'ptyxis-tc-blue-border-gray3'
+endif
+
 app_schema_profile_id = '@0@.Profile'.format(app_schema_id)
 app_schema_shortcuts_id = '@0@.Shortcuts'.format(app_schema_id)
 app_schema_shortcuts_path = '@0@Shortcuts/'.format(app_schema_path)
@@ -85,7 +90,7 @@ config_h.set_quoted('LOCALEDIR', get_option('prefix') / get_option('localedir'))
 # LIBEXECDIR must be expanded in config.h
 config_h.set_quoted('LIBEXECDIR', get_option('prefix') / get_option('libexecdir'))
 config_h.set_quoted('PACKAGE_WEBSITE', 'https://gitlab.gnome.org/chergert/ptyxis')
-config_h.set_quoted('PACKAGE_ICON_NAME', app_id)
+config_h.set_quoted('PACKAGE_ICON_NAME', app_icon_name)
 config_h.set_quoted('PACKAGE_NAME', 'Ptyxis')
 config_h.set10('DEVELOPMENT_BUILD', get_option('development'))
 config_h.set10('APP_IS_GENERIC', app_is_generic)

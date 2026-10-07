@@ -15,3 +15,15 @@ endif
 
 install_data('@0@.svg'.format(icon_prefix), rename: '@0@.svg'.format(app_id), install_dir: scalabledir)
 install_data('@0@-symbolic.svg'.format(icon_prefix), rename: '@0@-symbolic.svg'.format(app_id), install_dir: symbolicdir)
+
+# Keep each custom variant selectable by its own theme icon name.
+install_data(
+  'ptyxis-tc-blue-bg1.svg',
+  'ptyxis-tc-blue-border-gray0.svg',
+  'ptyxis-tc-blue-border-gray2.svg',
+  'ptyxis-tc-blue-border-gray3.svg',
+  'ptyxis-tc-blue-border-gray4.svg',
+  'ptyxis-tc-blue-border.svg',
+  'ptyxis-tc-blue.svg',
+  install_dir: scalabledir,
+)

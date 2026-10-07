@@ -1,0 +1,16 @@
+Source: ptyxis-tc
+Section: x11
+Priority: optional
+Maintainer: Bob Czys <greenfinch628@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13), meson (>= 1.0), ninja-build, pkgconf, gettext, desktop-file-utils, appstream, libglib2.0-dev (>= 2.80), libgtk-4-dev (>= 4.14), libadwaita-1-dev (>= 1.8), libjson-glib-dev (>= 1.6), libvte-2.91-gtk4-dev (>= 0.79), libportal-gtk4-dev
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+Homepage: https://github.com/greenfinch628/ptyxis-tc
+
+Package: ptyxis-tc
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}, libglib2.0-bin, libadwaita-1-0 (>= 1.8), libvte-2.91-gtk4-0 (>= 0.79)
+Description: Ptyxis with hostname tab colors and clipboard shortcuts
+ Unofficial Ptyxis fork providing automatic hostname colors, persistent
+ manual tab colors, and right-click copy/paste. Uses a separate application
+ ID and settings namespace alongside the distribution's regular Ptyxis.

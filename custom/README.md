@@ -50,6 +50,7 @@ Close Ptyxis-TC before installing or updating:
 
     sudo meson install -C build-tc
     sudo install -m 755 custom/ptyxis-tab-colors /opt/ptyxis-tab-colors-50.1/bin/ptyxis-tab-colors
+    custom/install-icons.sh ~/.local/share
     mkdir -p ~/.local/share/applications
     install -m 644 custom/org.gnome.Ptyxis.TabColors.desktop ~/.local/share/applications/
     mkdir -p ~/.config/org.gnome.Ptyxis.TabColors

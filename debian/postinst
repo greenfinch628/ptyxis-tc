@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+if [ "$1" = configure ]; then
+    glib-compile-schemas /opt/ptyxis-tab-colors-50.1/share/glib-2.0/schemas
+fi
+#DEBHELPER#

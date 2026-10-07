@@ -1,0 +1,29 @@
+ptyxis-tc (50.2-4ubuntu26.04.1) resolute; urgency=medium
+
+  * Install all named custom icon variants alongside the upstream artwork.
+  * Use gray 3 as the default application icon.
+  * Display ptyxis-tc as the launcher name.
+
+ -- Bob Czys <greenfinch628@users.noreply.github.com>  Wed, 07 Oct 2026 12:00:00 -0500
+
+ptyxis-tc (50.2-3ubuntu26.04.1) resolute; urgency=medium
+
+  * Open the context menu on middle-click when right-click clipboard mode is enabled.
+  * Manage the middle-click popover separately to prevent crashes.
+  * Preserve normal left-button selection and saved mouse preference.
+
+ -- Bob Czys <greenfinch628@users.noreply.github.com>  Wed, 07 Oct 2026 10:00:00 -0500
+
+ptyxis-tc (50.2-2ubuntu26.04.1) resolute; urgency=medium
+
+  * Add persistent Preferences switch for right-click copy/paste.
+  * Keep the switch enabled by default; disabling restores the context menu.
+
+ -- Bob Czys <greenfinch628@users.noreply.github.com>  Tue, 06 Oct 2026 09:00:00 -0500
+
+ptyxis-tc (50.2-1ubuntu26.04.1) resolute; urgency=medium
+
+  * Initial local Ubuntu 26.04 amd64 package.
+  * Preserve TabColors application identity, settings and existing prefix.
+
+ -- Bob Czys <greenfinch628@users.noreply.github.com>  Mon, 05 Oct 2026 20:00:00 -0500

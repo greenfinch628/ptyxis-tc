@@ -3,7 +3,7 @@ Name=@APP_NAME@
 Comment=A container-oriented terminal for GNOME
 Exec=ptyxis
 # Translators: Do NOT translate or transliterate this text (this is an icon file name)!
-Icon=@APP_ID@
+Icon=@APP_ICON_NAME@
 DBusActivatable=true
 StartupNotify=true
 Terminal=false
