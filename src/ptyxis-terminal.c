@@ -61,6 +61,7 @@ struct _PtyxisTerminal
   GHashTable         *custom_links;
 
   GtkPopover         *popover;
+  GtkPopover         *middle_click_popover;
   GMenu              *terminal_menu;
   GtkWidget          *drop_highlight;
   GtkDropTargetAsync *drop_target;
@@ -289,6 +290,7 @@ ptyxis_terminal_capture_click_pressed_cb (PtyxisTerminal  *self,
   g_autofree char *match = NULL;
   GdkModifierType state;
   gboolean handled = FALSE;
+  gboolean right_click_copy_paste;
   GdkEvent *event;
   int button;
   int tag = 0;
@@ -300,10 +302,38 @@ ptyxis_terminal_capture_click_pressed_cb (PtyxisTerminal  *self,
   state = gdk_event_get_modifier_state (event) & gtk_accelerator_get_default_mod_mask ();
   button = gtk_gesture_single_get_current_button (GTK_GESTURE_SINGLE (click));
 
-  if (button == GDK_BUTTON_SECONDARY && state == 0 &&
-      g_settings_get_boolean (ptyxis_settings_get_settings (
-                                ptyxis_application_get_settings (PTYXIS_APPLICATION_DEFAULT)),
-                              "right-click-copy-paste"))
+  right_click_copy_paste =
+    g_settings_get_boolean (ptyxis_settings_get_settings (
+                              ptyxis_application_get_settings (PTYXIS_APPLICATION_DEFAULT)),
+                            "right-click-copy-paste");
+
+  if (button == GDK_BUTTON_MIDDLE && state == 0 && right_click_copy_paste)
+    {
+      /* Claim the click before VTE can paste the primary selection. */
+      gtk_gesture_set_state (GTK_GESTURE (click), GTK_EVENT_SEQUENCE_CLAIMED);
+      /* VTE owns the normal menu's parenting lifecycle. Use the same
+       * model in a separately parented popover for middle-click. */
+      if (self->middle_click_popover == NULL)
+        {
+          GMenuModel *model = gtk_popover_menu_get_menu_model (GTK_POPOVER_MENU (self->popover));
+
+          self->middle_click_popover = GTK_POPOVER (gtk_popover_menu_new_from_model (model));
+          gtk_widget_set_parent (GTK_WIDGET (self->middle_click_popover), GTK_WIDGET (self));
+          gtk_popover_set_has_arrow (self->middle_click_popover, FALSE);
+          gtk_popover_set_position (self->middle_click_popover, GTK_POS_BOTTOM);
+        }
+
+      ptyxis_terminal_update_clipboard_actions (self);
+      ptyxis_terminal_update_url_actions (self, x, y);
+      gtk_popover_set_pointing_to (self->middle_click_popover, &(GdkRectangle) {x, y, 1, 1});
+      gtk_widget_set_halign (GTK_WIDGET (self->middle_click_popover),
+                            gtk_widget_get_direction (GTK_WIDGET (self)) == GTK_TEXT_DIR_RTL
+                            ? GTK_ALIGN_END : GTK_ALIGN_START);
+      gtk_popover_popup (self->middle_click_popover);
+      return;
+    }
+
+  if (button == GDK_BUTTON_SECONDARY && state == 0 && right_click_copy_paste)
     {
       ptyxis_terminal_right_click_clipboard (self);
       gtk_gesture_set_state (GTK_GESTURE (click), GTK_EVENT_SEQUENCE_CLAIMED);
@@ -1244,6 +1274,12 @@ ptyxis_terminal_dispose (GObject *object)
   PtyxisTerminal *self = (PtyxisTerminal *)object;
 
   g_debug ("Disposing %s @ %p", G_OBJECT_TYPE_NAME (self), object);
+
+  if (self->middle_click_popover != NULL)
+    {
+      gtk_widget_unparent (GTK_WIDGET (self->middle_click_popover));
+      self->middle_click_popover = NULL;
+    }
 
   gtk_widget_dispose_template (GTK_WIDGET (self), PTYXIS_TYPE_TERMINAL);
 

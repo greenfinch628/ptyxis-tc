@@ -401,7 +401,7 @@
             <child>
               <object class="AdwSwitchRow" id="right_click_copy_paste">
                 <property name="title" translatable="yes">Right-Click Copy and Paste</property>
-                <property name="subtitle" translatable="yes">Copy selected text or paste when nothing is selected. Turn off to open the context menu. Shift+right-click always opens the context menu.</property>
+                <property name="subtitle" translatable="yes">Right-click copies selected text or pastes; middle-click opens the context menu. Turn off to restore normal mouse behavior.</property>
               </object>
             </child>
           </object>

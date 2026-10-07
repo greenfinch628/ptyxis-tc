@@ -12,7 +12,10 @@ Upstream: https://gitlab.gnome.org/chergert/ptyxis
 - Manual colors retained during session restoration.
 - Right-click copies selected text; without a selection, it pastes.
 - Enable or disable right-click copy/paste in Preferences → Behavior → Mouse.
-  It is enabled by default; disabling it restores the normal right-click context menu.
+  It is enabled by default; middle-click in the terminal text area opens the context menu
+  instead of pasting the primary selection while enabled.
+  Disabling it restores normal right-click context menu and middle-click behavior.
+  Left-button text selection, dragging, and highlighting use normal mouse behavior.
   The preference is saved across restarts.
 - Shift+right-click opens the original terminal context menu.
 

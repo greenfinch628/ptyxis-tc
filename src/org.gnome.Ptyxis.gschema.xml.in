@@ -217,7 +217,7 @@
     <key name="right-click-copy-paste" type="b">
       <default>true</default>
       <summary>Right-click copy and paste</summary>
-      <description>Copy selected text or paste the clipboard on right-click. When disabled, right-click opens the normal context menu.</description>
+      <description>Copy selected text or paste the clipboard on right-click, and open the context menu on middle-click. When disabled, restore normal right-click and middle-click behavior.</description>
     </key>
 
     <key name="toast-on-copy-clipboard" type="b">
