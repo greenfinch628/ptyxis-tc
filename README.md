@@ -180,3 +180,8 @@ Original copyright and license notices are retained.
 Ptyxis is developed upstream by Christian Hergert and contributors.
 Modified by Bob Czys, October 5, 2026.
 The original upstream README is preserved in [README-upstream.md](README-upstream.md).
+
+## Current packages
+
+Revision 5 RPM and DEB packages, checksums, and corresponding source are
+available in [packages/](packages/README.md). Use the package matching your OS.
