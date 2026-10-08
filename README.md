@@ -24,6 +24,8 @@ the GNU General Public License; see [COPYING](COPYING).
 
 - Automatic tab background colors based on hostnames and SSH aliases.
 - Manual tab colors through the tab context menu.
+- A 3-pixel white underline identifies the active tab; inactive colors blend
+  with 60% light gray while retaining 40% of the selected host color.
 - Manual colors retained during session restoration.
 - Right-click copies selected text and clears the selection; with no selection, it pastes.
 - Enable or disable right-click copy/paste in Preferences → Behavior → Mouse.
@@ -104,7 +106,7 @@ RPM artifacts and build inputs in that directory are excluded from Git and
 are not included in a fresh clone.
 
 ```bash
-sudo dnf install ~/ptyxis-tc/local-rpm/RPMS/x86_64/ptyxis-tc-50.2-3.fc44.x86_64.rpm
+sudo dnf install ~/Applications/ptyxis-tc/local-rpm/RPMS/x86_64/ptyxis-tc-50.2-3.fc44.x86_64.rpm
 ```
 
 Close and reopen Ptyxis-TC after upgrading. Launch it from the application

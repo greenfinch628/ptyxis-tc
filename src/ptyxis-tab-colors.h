@@ -83,7 +83,8 @@ color_tab_widgets (GtkWidget *widget, GKeyFile *config)
       g_object_get (widget, "page", &page, NULL);
       if (page && PTYXIS_IS_TAB (adw_tab_page_get_child (page)))
         value = color_tab_value (PTYXIS_TAB (adw_tab_page_get_child (page)), config);
-      if (g_strcmp0 (value, g_object_get_data (G_OBJECT (widget), "tab-color-applied")))
+      if (!g_object_get_data (G_OBJECT (widget), "tab-color-provider") ||
+          g_strcmp0 (value, g_object_get_data (G_OBJECT (widget), "tab-color-applied")))
         {
           GtkCssProvider *provider = g_object_get_data (G_OBJECT (widget), "tab-color-provider");
           GdkRGBA rgba;
@@ -91,20 +92,25 @@ color_tab_widgets (GtkWidget *widget, GKeyFile *config)
             gtk_style_context_remove_provider (gtk_widget_get_style_context (widget), GTK_STYLE_PROVIDER (provider));
           g_object_set_data (G_OBJECT (widget), "tab-color-provider", NULL);
           g_object_set_data_full (G_OBJECT (widget), "tab-color-applied", g_strdup (value), g_free);
+          g_autofree char *css = NULL;
           if (value && gdk_rgba_parse (&rgba, value))
             {
               g_autofree char *css_color = gdk_rgba_to_string (&rgba);
               double luminance = .2126 * rgba.red + .7152 * rgba.green + .0722 * rgba.blue;
-              g_autofree char *css = g_strdup_printf (
-                "tab { background-color: %s; background-image: none; color: %s; }"
-                "tab:selected { box-shadow: inset 0 -3px %s; }",
-                css_color, luminance > .5 ? "#141414" : "#ffffff",
-                luminance > .5 ? "#141414" : "#ffffff");
-              provider = gtk_css_provider_new ();
-              gtk_css_provider_load_from_string (provider, css);
-              gtk_style_context_add_provider (gtk_widget_get_style_context (widget), GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION + 10);
-              g_object_set_data_full (G_OBJECT (widget), "tab-color-provider", provider, g_object_unref);
+              const char *foreground = luminance > .5 ? "#141414" : "#ffffff";
+              css = g_strdup_printf (
+                "tab { background-color: mix(#dddddd, %s, 0.40); "
+                "background-image: none; color: #141414; border-bottom: 3px solid transparent; }"
+                "tab:selected { background-color: %s; color: %s; "
+                "background-image: none; border-bottom-color: #ffffff; box-shadow: none; }",
+                css_color, css_color, foreground);
             }
+          else
+            css = g_strdup ("tab { border-bottom: 3px solid transparent; } tab:selected { background-image: none; border-bottom-color: #ffffff; box-shadow: none; }");
+          provider = gtk_css_provider_new ();
+          gtk_css_provider_load_from_string (provider, css);
+          gtk_style_context_add_provider (gtk_widget_get_style_context (widget), GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION + 10);
+          g_object_set_data_full (G_OBJECT (widget), "tab-color-provider", provider, g_object_unref);
         }
     }
   for (GtkWidget *child = gtk_widget_get_first_child (widget); child; child = gtk_widget_get_next_sibling (child))

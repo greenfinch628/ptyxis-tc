@@ -28,8 +28,8 @@ clean source checkout and prepare an upstream archive without `debian/`:
 ```sh
 mkdir -p /tmp/ptyxis-tc-deb-build
 cd /tmp/ptyxis-tc-deb-build
-git --no-pager -C ~/ptyxis-tc archive --prefix=ptyxis-tc-50.2/ HEAD | tar -xf -
-git --no-pager -C ~/ptyxis-tc archive --prefix=ptyxis-tc-50.2/ HEAD -- . ':!debian' | gzip -n > ptyxis-tc_50.2.orig.tar.gz
+git --no-pager -C ~/Applications/ptyxis-tc archive --prefix=ptyxis-tc-50.2/ HEAD | tar -xf -
+git --no-pager -C ~/Applications/ptyxis-tc archive --prefix=ptyxis-tc-50.2/ HEAD -- . ':!debian' | gzip -n > ptyxis-tc_50.2.orig.tar.gz
 ```
 
 In an Ubuntu 26.04 environment, install `build-essential`, `devscripts` and

@@ -1,3 +1,10 @@
+ptyxis-tc (50.2-5ubuntu26.04.1) resolute; urgency=medium
+
+  * Add a consistent 3-pixel white active-tab underline.
+  * Blend inactive colors with 60 percent light gray, retaining 40 percent color.
+
+ -- Bob Czys <greenfinch628@users.noreply.github.com>  Thu, 08 Oct 2026 12:00:00 -0500
+
 ptyxis-tc (50.2-4ubuntu26.04.1) resolute; urgency=medium
 
   * Install all named custom icon variants alongside the upstream artwork.

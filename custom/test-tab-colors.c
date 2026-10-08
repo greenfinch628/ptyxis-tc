@@ -49,6 +49,13 @@ int main (void)
   gtk_window_set_child(GTK_WINDOW(window), box);
   AdwTabPage *page = adw_tab_view_append(view, tab);
   adw_tab_page_set_title(page, "scopuli");
+  GtkWidget *preview_tab = vte_terminal_new();
+  g_object_set_data_full(G_OBJECT(preview_tab), "tab-color-override", g_strdup("#26a269"), g_free);
+  AdwTabPage *preview_page = adw_tab_view_append(view, preview_tab);
+  adw_tab_page_set_title(preview_page, "Inactive green");
+  adw_tab_page_set_title(page, "Active red — underlined");
+  adw_tab_view_set_selected_page(view, page);
+  gtk_window_set_default_size(GTK_WINDOW(window), 760, 280);
   gtk_window_present(GTK_WINDOW(window));
   for (int i=0; i<100; i++) { while(g_main_context_iteration(NULL,FALSE)); g_usleep(10000); }
   color_tab_widgets(bar, config);
@@ -63,6 +70,10 @@ int main (void)
   gdk_texture_save_to_png(texture, "test-tab-colors.png");
   g_object_unref(texture); gsk_render_node_unref(node); g_object_unref(paintable);
   g_assert_cmpint(colored, >, 0);
+  adw_tab_view_set_selected_page(view, preview_page);
+  g_assert_false(adw_tab_page_get_selected(page));
+  g_assert_true(adw_tab_page_get_selected(preview_page));
+  adw_tab_view_close_page(view, preview_page);
   g_object_set_data(G_OBJECT(tab), "tab-color-override", NULL);
   color_tab_widgets(bar, config);
   g_autofree char *automatic = color_tab_value(tab, config);
