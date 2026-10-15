@@ -2,7 +2,7 @@
 %global tc_prefix /opt/ptyxis-tab-colors-50.1
 Name: ptyxis-tc
 Version: 50.2
-Release: 5%{?dist}
+Release: 6%{?dist}
 Summary: Ptyxis with hostname tab colors and right-click clipboard shortcuts
 License: GPL-3.0-or-later
 URL: https://github.com/greenfinch628/ptyxis-tc

@@ -1,3 +1,9 @@
+ptyxis-tc (50.2-6ubuntu26.04.1) resolute; urgency=medium
+
+  * Rebuild the release baseline with change-tracking documentation.
+
+ -- Bob Czys <greenfinch628@users.noreply.github.com>  Thu, 15 Oct 2026 16:30:00 -0500
+
 ptyxis-tc (50.2-5ubuntu26.04.1) resolute; urgency=medium
 
   * Add a consistent 3-pixel white active-tab underline.

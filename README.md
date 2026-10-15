@@ -183,5 +183,5 @@ The original upstream README is preserved in [README-upstream.md](README-upstrea
 
 ## Current packages
 
-Revision 5 RPM and DEB packages, checksums, and corresponding source are
+Revision 6 RPM and DEB packages, checksums, and corresponding source are
 available in [packages/](packages/README.md). Use the package matching your OS.
