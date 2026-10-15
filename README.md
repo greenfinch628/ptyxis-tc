@@ -5,20 +5,24 @@ hostname-based tab colors, manual tab colors, and right-click copy/paste.
 
 ![Ptyxis-TC showing blue and green tab backgrounds](custom/screenshots/tab-colors.png)
 
-## Project status and disclaimer
+## Project status and support
 
-Ptyxis-TC was created for personal use and is shared as-is. No additional
-features are planned. The RPM and DEB packages are provided for convenience.
+Ptyxis-TC is provided **as is, without warranty**. **No technical support is
+provided.** There is no commitment to ongoing maintenance, updates, or
+compatibility with future operating system or dependency versions.
 
-There is no fixed maintenance or release schedule. Updates to this fork and
-its packages will not necessarily follow releases of upstream Ptyxis, and
-upstream bug fixes or security fixes may not be included promptly, or at all.
-Support and continued compatibility with future distribution or library
-versions are not guaranteed.
+Bug reports, enhancement requests, and proposed fixes or improvements are
+welcome through this project's [GitHub repository](https://github.com/greenfinch628/ptyxis-tc)
+or [Gitea repository](http://scopuli:3000/scopuli/ptyxis-tc) and will be considered
+at the maintainer's discretion. Submitting a report, request, or contribution
+does not guarantee a response, investigation, acceptance, fix, or implementation.
+No release or completion date is promised.
 
 This is an unofficial project and is not affiliated with or endorsed by the
-upstream Ptyxis developers. It is provided without warranty, as described in
-the GNU General Public License; see [COPYING](COPYING).
+upstream Ptyxis developers. Updates do not necessarily follow upstream releases;
+upstream bug fixes and security fixes may not be included promptly, or at all.
+The warranty terms in the GNU General Public License continue to apply; see
+[COPYING](COPYING).
 
 ## Features
 
