@@ -812,7 +812,8 @@
   </menu>
   <menu id="tab_menu">
     <section>
-      <item><attribute name="label">Tab Background Color…</attribute><attribute name="action">win.tab-color</attribute></item>
+      <item><attribute name="label">Active Tab Background Color…</attribute><attribute name="action">win.tab-color</attribute></item>
+      <item><attribute name="label">Inactive Tab Background Color…</attribute><attribute name="action">win.tab-color-inactive</attribute></item>
       <item><attribute name="label">Automatic Tab Color</attribute><attribute name="action">win.tab-color-auto</attribute></item>
     </section>
     <section>

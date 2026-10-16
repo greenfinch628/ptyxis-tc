@@ -37,6 +37,7 @@
 #include "ptyxis-profile-row.h"
 #include "ptyxis-shortcut-row.h"
 #include "ptyxis-util.h"
+#include "ptyxis-tab-color-defaults.h"
 
 
 /* This will not transition to AdwDialog until there is a way for
@@ -76,6 +77,7 @@ struct _PtyxisPreferencesWindow
   AdwSwitchRow         *login_shell;
   GtkAdjustment        *opacity_adjustment;
   AdwPreferencesGroup  *opacity_group;
+  AdwPreferencesGroup  *tab_colors_group;
   GtkLabel             *opacity_label;
   GtkFlowBox           *palette_previews;
   AdwComboRow          *preserve_directory;
@@ -149,6 +151,7 @@ enum {
 };
 
 static PtyxisPreferencesWindow *instance;
+static void reset_all_action (GtkWidget *widget, const char *name, GVariant *parameter);
 static GParamSpec *properties[N_PROPS];
 
 static gboolean
@@ -1065,6 +1068,11 @@ ptyxis_preferences_window_dispose (GObject *object)
 {
   PtyxisPreferencesWindow *self = (PtyxisPreferencesWindow *)object;
 
+  if (instance == self)
+    instance = NULL;
+  g_signal_handlers_disconnect_by_data (PTYXIS_APPLICATION_DEFAULT, self);
+  g_signal_handlers_disconnect_by_data (adw_style_manager_get_default (), self);
+
   gtk_widget_dispose_template (GTK_WIDGET (self), PTYXIS_TYPE_PREFERENCES_WINDOW);
 
   g_clear_pointer (&self->default_palette_id, g_free);
@@ -1164,6 +1172,7 @@ ptyxis_preferences_window_class_init (PtyxisPreferencesWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, login_shell);
   gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, opacity_adjustment);
   gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, opacity_group);
+  gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, tab_colors_group);
   gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, opacity_label);
   gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, palette_previews);
   gtk_widget_class_bind_template_child (widget_class, PtyxisPreferencesWindow, preserve_directories);
@@ -1242,6 +1251,7 @@ ptyxis_preferences_window_class_init (PtyxisPreferencesWindowClass *klass)
                                    "settings.select-custom-font",
                                    NULL,
                                    ptyxis_preferences_window_select_custom_font);
+  gtk_widget_class_install_action (widget_class, "settings.reset-all", NULL, reset_all_action);
   gtk_widget_class_install_action (widget_class,
                                    "toast.add",
                                    NULL,
@@ -1254,11 +1264,231 @@ ptyxis_preferences_window_class_init (PtyxisPreferencesWindowClass *klass)
 }
 
 static void
+reset_all_response (AdwAlertDialog *dialog, const char *response, PtyxisPreferencesWindow *self)
+{
+  g_autoptr(PtyxisPreferencesWindow) keep_alive = g_object_ref (self);
+  g_autoptr(GError) error = NULL;
+  g_autofree char *backup = NULL;
+  g_autofree char *body = NULL;
+  g_autoptr(GtkWindow) parent = NULL;
+  AdwDialog *notice;
+
+  if (!g_str_equal (response, "reset"))
+    return;
+  if (gtk_window_get_transient_for (GTK_WINDOW (self)))
+    parent = g_object_ref (gtk_window_get_transient_for (GTK_WINDOW (self)));
+  /* The shortcuts entry can open a Preferences window without an application.
+   * Register it so its bindings are disposed before the reset changes profiles. */
+  if (gtk_window_get_application (GTK_WINDOW (self)) != GTK_APPLICATION (PTYXIS_APPLICATION_DEFAULT))
+    gtk_application_add_window (GTK_APPLICATION (PTYXIS_APPLICATION_DEFAULT), GTK_WINDOW (self));
+  backup = ptyxis_application_reset_preferences (PTYXIS_APPLICATION_DEFAULT, &error);
+  if (backup)
+    {
+      gtk_window_destroy (GTK_WINDOW (self));
+      body = g_strdup_printf (_("Initial settings have been restored. Reopen Preferences to view them. Open terminals stay running; their tabs will not be restored on the next launch.\n\nBackup: %s"), backup);
+    }
+  notice = adw_alert_dialog_new (backup ? _("Settings Reset") : _("Could Not Reset Settings"),
+                                  backup ? body : error->message);
+  adw_alert_dialog_add_response (ADW_ALERT_DIALOG (notice), "close", _("_Close"));
+  adw_dialog_present (notice, parent ? GTK_WIDGET (parent) : (backup ? NULL : GTK_WIDGET (self)));
+}
+
+static void
+reset_all_action (GtkWidget *widget, const char *name, GVariant *parameter)
+{
+  AdwDialog *dialog = adw_alert_dialog_new (_("Reset All Settings?"),
+    _("Restore initial preferences, profiles, shortcuts, tab colors, and SSH color mappings, and clear the saved session. A backup will be kept. Open terminals will stay running and use the default profile and colors."));
+  adw_alert_dialog_add_responses (ADW_ALERT_DIALOG (dialog), "cancel", _("_Cancel"),
+                                  "reset", _("_Reset All Settings"), NULL);
+  adw_alert_dialog_set_default_response (ADW_ALERT_DIALOG (dialog), "cancel");
+  adw_alert_dialog_set_close_response (ADW_ALERT_DIALOG (dialog), "cancel");
+  adw_alert_dialog_set_response_appearance (ADW_ALERT_DIALOG (dialog), "reset", ADW_RESPONSE_DESTRUCTIVE);
+  g_signal_connect_object (dialog, "response", G_CALLBACK (reset_all_response), widget, 0);
+  adw_dialog_present (dialog, widget);
+}
+
+static const char *
+tab_appearance_default_label (const char *key)
+{
+  if (g_str_equal (key, "active-background"))
+    return _("Default (#e8e8e8)");
+  if (g_str_equal (key, "inactive-background"))
+    return _("Default (#c0bfbc)");
+  return _("Default (Black)");
+}
+
+/* Keep appearance defaults alongside existing Hosts/Aliases. Load on every
+ * write so a preference change preserves mappings and external edits. */
+static gboolean
+save_tab_appearance (GtkWidget *control, const char *value)
+{
+  PtyxisPreferencesWindow *self = PTYXIS_PREFERENCES_WINDOW (gtk_widget_get_ancestor (control, PTYXIS_TYPE_PREFERENCES_WINDOW));
+  const char *key = g_object_get_data (G_OBJECT (control), "appearance-key");
+  AdwActionRow *row = g_object_get_data (G_OBJECT (control), "appearance-row");
+  g_autoptr(GKeyFile) config = g_key_file_new ();
+  g_autoptr(GError) error = NULL;
+  g_autofree char *directory = g_build_filename (g_get_user_config_dir (), APP_ID, NULL);
+  g_autofree char *path = g_build_filename (directory, "tab-colors.ini", NULL);
+  g_autofree char *contents = NULL;
+  gsize length;
+
+  if (!g_key_file_load_from_file (config, path, G_KEY_FILE_KEEP_COMMENTS, &error))
+    {
+      if (!g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
+        goto failed;
+      g_clear_error (&error);
+    }
+  if (!key)
+    {
+      /* Apply the background pair atomically, preserving text and mappings. */
+      g_key_file_set_string (config, "Appearance", "active-background", PTYXIS_TAB_ACTIVE_DEFAULT);
+      g_key_file_set_string (config, "Appearance", "inactive-background", PTYXIS_TAB_INACTIVE_DEFAULT);
+    }
+  else if (value)
+    g_key_file_set_string (config, "Appearance", key, value);
+  else
+    g_key_file_remove_key (config, "Appearance", key, NULL);
+  contents = g_key_file_to_data (config, &length, &error);
+  if (!contents)
+    goto failed;
+  if (g_mkdir_with_parents (directory, 0700) != 0)
+    {
+      g_set_error_literal (&error, G_FILE_ERROR, G_FILE_ERROR_FAILED, "Cannot create the configuration directory");
+      goto failed;
+    }
+  if (!g_file_set_contents_full (path, contents, length,
+                                G_FILE_SET_CONTENTS_CONSISTENT | G_FILE_SET_CONTENTS_DURABLE,
+                                0600, &error))
+    goto failed;
+  if (row)
+    adw_action_row_set_subtitle (row, value ? value : tab_appearance_default_label (key));
+  return TRUE;
+
+failed:
+  adw_preferences_window_add_toast (ADW_PREFERENCES_WINDOW (self), adw_toast_new (error->message));
+  return FALSE;
+}
+
+static void
+tab_appearance_changed (GtkColorDialogButton *button, GParamSpec *pspec, gpointer data)
+{
+  g_autofree char *value = gdk_rgba_to_string (gtk_color_dialog_button_get_rgba (button));
+  const GdkRGBA *previous = g_object_get_data (G_OBJECT (button), "appearance-previous");
+  if (save_tab_appearance (GTK_WIDGET (button), value))
+    g_object_set_data_full (G_OBJECT (button), "appearance-previous",
+                            gdk_rgba_copy (gtk_color_dialog_button_get_rgba (button)), (GDestroyNotify) gdk_rgba_free);
+  else if (previous)
+    {
+      g_signal_handlers_block_by_func (button, tab_appearance_changed, NULL);
+      gtk_color_dialog_button_set_rgba (button, previous);
+      g_signal_handlers_unblock_by_func (button, tab_appearance_changed, NULL);
+    }
+}
+
+static void
+tab_appearance_reset (GtkButton *button, gpointer data)
+{
+  const char *key = g_object_get_data (G_OBJECT (button), "appearance-key");
+  GtkColorDialogButton *picker = g_object_get_data (G_OBJECT (button), "appearance-picker");
+  if (save_tab_appearance (GTK_WIDGET (button), NULL))
+    {
+      GdkRGBA rgba;
+      const char *fallback = g_str_equal (key, "active-background") ? PTYXIS_TAB_ACTIVE_DEFAULT
+                           : g_str_equal (key, "inactive-background") ? PTYXIS_TAB_INACTIVE_DEFAULT
+                           : PTYXIS_TAB_TEXT_DEFAULT;
+      gdk_rgba_parse (&rgba, fallback);
+      /* Update the preview without writing an explicit override back to disk. */
+      g_signal_handlers_block_by_func (picker, tab_appearance_changed, NULL);
+      gtk_color_dialog_button_set_rgba (picker, &rgba);
+      g_signal_handlers_unblock_by_func (picker, tab_appearance_changed, NULL);
+      g_object_set_data_full (G_OBJECT (picker), "appearance-previous", gdk_rgba_copy (&rgba), (GDestroyNotify) gdk_rgba_free);
+    }
+}
+
+static void
+tab_appearance_defaults (GtkButton *button, gpointer data)
+{
+  if (save_tab_appearance (GTK_WIDGET (button), NULL))
+    {
+      const char *names[] = { "active-picker", "inactive-picker" };
+      const char *values[] = { PTYXIS_TAB_ACTIVE_DEFAULT, PTYXIS_TAB_INACTIVE_DEFAULT };
+      for (guint i = 0; i < G_N_ELEMENTS (names); i++)
+        {
+          GtkColorDialogButton *picker = g_object_get_data (G_OBJECT (button), names[i]);
+          AdwActionRow *row = g_object_get_data (G_OBJECT (picker), "appearance-row");
+          GdkRGBA rgba;
+          gdk_rgba_parse (&rgba, values[i]);
+          g_signal_handlers_block_by_func (picker, tab_appearance_changed, NULL);
+          gtk_color_dialog_button_set_rgba (picker, &rgba);
+          g_signal_handlers_unblock_by_func (picker, tab_appearance_changed, NULL);
+          g_object_set_data_full (G_OBJECT (picker), "appearance-previous", gdk_rgba_copy (&rgba), (GDestroyNotify) gdk_rgba_free);
+          adw_action_row_set_subtitle (row, values[i]);
+        }
+    }
+}
+
+static void
+tab_appearance_setup (PtyxisPreferencesWindow *self)
+{
+  const char *keys[] = { "active-background", "inactive-background", "active-foreground", "inactive-foreground" };
+  const char *titles[] = { N_("Active Background"), N_("Inactive Background"), N_("Active Text"), N_("Inactive Text") };
+  const char *defaults[] = { PTYXIS_TAB_ACTIVE_DEFAULT, PTYXIS_TAB_INACTIVE_DEFAULT, PTYXIS_TAB_TEXT_DEFAULT, PTYXIS_TAB_TEXT_DEFAULT };
+  GtkWidget *restore = gtk_button_new_with_label (_("Default"));
+  g_autoptr(GKeyFile) config = g_key_file_new ();
+  g_autofree char *path = g_build_filename (g_get_user_config_dir (), APP_ID, "tab-colors.ini", NULL);
+
+  g_key_file_load_from_file (config, path, G_KEY_FILE_NONE, NULL);
+  gtk_widget_set_tooltip_text (restore, _("Set active background to #e8e8e8 and inactive background to #c0bfbc"));
+  gtk_widget_set_valign (restore, GTK_ALIGN_CENTER);
+  g_object_set_data (G_OBJECT (restore), "appearance-defaults", GINT_TO_POINTER (1));
+  g_signal_connect (restore, "clicked", G_CALLBACK (tab_appearance_defaults), NULL);
+  adw_preferences_group_set_header_suffix (self->tab_colors_group, restore);
+  for (guint i = 0; i < G_N_ELEMENTS (keys); i++)
+    {
+      AdwActionRow *row = ADW_ACTION_ROW (adw_action_row_new ());
+      /* gtk_color_dialog_button_new() takes ownership of this dialog. */
+      GtkColorDialog *dialog = gtk_color_dialog_new ();
+      GtkWidget *button = gtk_color_dialog_button_new (dialog);
+      GtkWidget *reset = gtk_button_new_from_icon_name ("edit-undo-symbolic");
+      g_autofree char *value = g_key_file_get_string (config, "Appearance", keys[i], NULL);
+      GdkRGBA rgba;
+      gboolean valid = value && gdk_rgba_parse (&rgba, value);
+
+      gtk_color_dialog_set_with_alpha (dialog, FALSE);
+      gtk_color_dialog_set_title (dialog, _(titles[i]));
+      if (!valid)
+        gdk_rgba_parse (&rgba, defaults[i]);
+      gtk_color_dialog_button_set_rgba (GTK_COLOR_DIALOG_BUTTON (button), &rgba);
+      g_object_set_data_full (G_OBJECT (button), "appearance-previous", gdk_rgba_copy (&rgba), (GDestroyNotify) gdk_rgba_free);
+      adw_preferences_row_set_title (ADW_PREFERENCES_ROW (row), _(titles[i]));
+      adw_action_row_set_subtitle (row, valid ? value : tab_appearance_default_label (keys[i]));
+      gtk_widget_set_valign (button, GTK_ALIGN_CENTER);
+      gtk_widget_set_valign (reset, GTK_ALIGN_CENTER);
+      gtk_widget_set_tooltip_text (reset, i >= 2 ? _("Reset to Black") : _("Reset to Default"));
+      gtk_accessible_update_property (GTK_ACCESSIBLE (button), GTK_ACCESSIBLE_PROPERTY_LABEL, _(titles[i]), -1);
+      adw_action_row_add_suffix (row, button);
+      adw_action_row_add_suffix (row, reset);
+      adw_action_row_set_activatable_widget (row, button);
+      g_object_set_data (G_OBJECT (button), "appearance-key", (gpointer) keys[i]);
+      g_object_set_data (G_OBJECT (reset), "appearance-key", (gpointer) keys[i]);
+      if (i < 2)
+        g_object_set_data (G_OBJECT (restore), i == 0 ? "active-picker" : "inactive-picker", button);
+      g_object_set_data (G_OBJECT (button), "appearance-row", row);
+      g_object_set_data (G_OBJECT (reset), "appearance-row", row);
+      g_object_set_data (G_OBJECT (reset), "appearance-picker", button);
+      g_signal_connect (button, "notify::rgba", G_CALLBACK (tab_appearance_changed), NULL);
+      g_signal_connect (reset, "clicked", G_CALLBACK (tab_appearance_reset), NULL);
+      adw_preferences_group_add (self->tab_colors_group, GTK_WIDGET (row));
+    }
+}
+
+static void
 ptyxis_preferences_window_init (PtyxisPreferencesWindow *self)
 {
   GtkDropTarget *drop_target;
 
   gtk_widget_init_template (GTK_WIDGET (self));
+  tab_appearance_setup (self);
 
   drop_target = gtk_drop_target_new (GDK_TYPE_FILE_LIST, GDK_ACTION_COPY);
   g_signal_connect_object (drop_target,

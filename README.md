@@ -28,8 +28,8 @@ The warranty terms in the GNU General Public License continue to apply; see
 
 - Automatic tab background colors based on hostnames and SSH aliases.
 - Manual tab colors through the tab context menu.
-- A 3-pixel white underline identifies the active tab; inactive colors blend
-  with 60% light gray while retaining 40% of the selected host color.
+- A 3-pixel white underline identifies the active tab. Default backgrounds are
+  active #e8e8e8 and inactive #c0bfbc, with independent color overrides.
 - Manual colors retained during session restoration.
 - Right-click copies selected text and clears the selection; with no selection, it pastes.
 - Enable or disable right-click copy/paste in Preferences → Behavior → Mouse.
@@ -85,7 +85,7 @@ The validated Ubuntu 26.04 amd64 DEB is available in
 To install the package from this checkout:
 
 ```bash
-sudo apt install ./packages/ubuntu-26.04/ptyxis-tc_50.2-3ubuntu26.04.1_amd64.deb
+sudo apt install ./packages/ubuntu-26.04/ptyxis-tc_50.2-6ubuntu26.04.1_amd64.deb
 ```
 
 APT resolves the required Ubuntu dependencies. Ubuntu 24.04's stock
@@ -105,12 +105,13 @@ the release page. See the release notes for the source commit and package build 
 
 ## Local RPM on Scopuli
 
-The locally built Fedora 44 x86_64 package is stored under `local-rpm/`.
-RPM artifacts and build inputs in that directory are excluded from Git and
-are not included in a fresh clone.
+The current Fedora 44 x86_64 package is stored under `packages/fedora-44/`.
+Revision 7 includes the independent tab colors and master reset, and has been
+installed and verified on Scopuli, Rocinante, Karakum, and Narlikar. Build inputs
+and temporary outputs under `local-rpm/` remain excluded from Git.
 
 ```bash
-sudo dnf install ~/Applications/ptyxis-tc/local-rpm/RPMS/x86_64/ptyxis-tc-50.2-3.fc44.x86_64.rpm
+sudo dnf install ./packages/fedora-44/ptyxis-tc-50.2-7.fc44.x86_64.rpm
 ```
 
 Close and reopen Ptyxis-TC after upgrading. Launch it from the application
@@ -164,6 +165,72 @@ This source reads the user configuration file; the legacy RPM configuration
 at `/etc/ptyxis-tc/tab-colors.ini` is not read. Copy any desired mappings from
 that file into your user configuration.
 
+## Active and inactive tab colors
+
+**Preferences → Appearance → Tab Colors** provides separate default active and
+inactive backgrounds and optional active/inactive text colors. Each control has
+a reset button. Tab text defaults to black in both states, regardless of background.
+Explicit text colors override black; resetting a text color restores black and
+updates its swatch. Preferences shows saved text colors when reopened.
+The **Default** button applies active `#e8e8e8` and inactive `#c0bfbc` backgrounds
+in one step. This pair is also built in for first startup and new tabs without
+manual or hostname overrides. The button preserves text colors and host mappings.
+Individual background reset arrows restore the same built-in colors.
+The active tab retains a white underline even when both backgrounds match.
+Tab switching updates the appearance through GTK selection state immediately.
+
+Right-click a tab for **Active Tab Background Color…** (the existing manual
+color action) or **Inactive Tab Background Color…**. **Automatic Tab Color**
+clears both manual backgrounds. Both overrides survive session restoration when
+Restore Session is enabled, using the existing session mechanism.
+
+The existing `[Hosts]` mappings continue to supply active backgrounds. Optional
+`[InactiveHosts]` mappings supply inactive backgrounds using the same hostname,
+short hostname, default, and SSH alias lookup. A manual active color replaces
+the automatic host pair; a manual inactive color can be assigned independently.
+
+Preferences stores defaults in `[Appearance]` in the existing `tab-colors.ini`:
+
+```ini
+[Appearance]
+active-background=#e8e8e8
+inactive-background=#c0bfbc
+# Optional; omit for black text:
+# active-foreground=#000000
+# inactive-foreground=#000000
+
+[InactiveHosts]
+scopuli=#b9cfea
+```
+
+Manual backgrounds take priority, followed by hostname mappings, then Appearance
+defaults. Without an explicit color, the built-in active `#e8e8e8` and inactive
+`#c0bfbc` pair applies. Existing saved colors remain in effect until changed or
+reset; configuration and sessions need no migration.
+Configuration-file edits and color assignments refresh within half a second.
+Invalid colors are ignored. Preferences preserves existing mappings and comments.
+
+## Reset all settings
+
+At the bottom of **Preferences → Appearance**, **Reset All Settings…** restores
+initial application preferences, profile settings, keyboard shortcuts, tab colors,
+and SSH color mappings. A confirmation lists the scope; Cancel changes nothing.
+The Tab Colors **Default** button remains available for just the two backgrounds.
+
+The master reset keeps a private backup under
+`~/.local/state/org.gnome.Ptyxis.TabColors/reset-backups/` before changing settings.
+The completion message shows its exact location. `settings.ini` records schema
+IDs, paths, and typed user values; `config/` holds the old color configuration
+and saved session, and `live-session.gvariant` captures the session state before resetting.
+If the backup cannot be created, the reset stops without changing preferences.
+
+Open terminal processes keep running and their tabs use a fresh default profile
+and colors. Preferences closes; reopen it to view the initial settings. Old tabs
+will not be saved or restored on the next launch; normal session saving resumes
+in the next application run. Imported palette files are retained. The reset is
+scoped to Ptyxis-TC; regular Ptyxis is unaffected. Installed and test TC builds
+share settings, as before.
+
 ## Validation and compatibility
 
 The current source built successfully on Scopuli (Fedora 44 x86_64) with
@@ -175,6 +242,17 @@ Tab styling uses libadwaita internals and deprecated GTK style APIs, so other
 library versions require verification. See
 [custom/ARCHIVE-NOTES.md](custom/ARCHIVE-NOTES.md) for the original build and
 validation history.
+
+The active/inactive regression suite can be rerun after configuring `build-tc`:
+
+```sh
+python3 custom/run-color-tests.py build-tc
+```
+
+It uses a private display and temporary settings under `build-tc/color-tests`,
+checks rendered background pixels across selection changes, SSH mapping logic,
+manual color pairs, session/profile restoration, tab navigation actions, and
+Preferences save/reset behavior. Logs and screenshots are saved with the tests.
 
 ## License and attribution
 

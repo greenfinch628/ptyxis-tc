@@ -2120,6 +2120,7 @@ ptyxis_window_class_init (PtyxisWindowClass *klass)
   gtk_widget_class_install_action (widget_class, "page.previous", NULL, ptyxis_window_page_previous_action);
   gtk_widget_class_install_action (widget_class, "win.tab-color", NULL, color_tab_action);
   gtk_widget_class_install_action (widget_class, "win.tab-color-auto", NULL, color_tab_action);
+  gtk_widget_class_install_action (widget_class, "win.tab-color-inactive", NULL, color_tab_action);
   gtk_widget_class_install_action (widget_class, "win.set-title", NULL, ptyxis_window_set_title_action);
   gtk_widget_class_install_action (widget_class, "win.set-profile", NULL, ptyxis_window_set_profile_action);
   gtk_widget_class_install_action (widget_class, "win.search", NULL, ptyxis_window_search_action);

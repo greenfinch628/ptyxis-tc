@@ -53,8 +53,10 @@ struct _PtyxisApplication
   PtyxisClient        *client;
   GHashTable          *exited;
   GVariant            *session;
+  GCancellable        *session_save_cancellable;
   GFileMonitor        *xdg_terminals_list_monitor;
   guint                has_restored_session : 1;
+  guint                skip_session_save : 1;
   guint                overlay_scrollbars : 1;
   guint                client_is_fallback : 1;
   guint                maximize : 1;
@@ -1030,6 +1032,7 @@ ptyxis_application_finalize (GObject *object)
   if (self->exited != NULL)
     g_hash_table_remove_all (self->exited);
 
+  g_clear_object (&self->session_save_cancellable);
   g_clear_object (&self->xdg_terminals_list_monitor);
   g_clear_object (&self->profiles);
   g_clear_object (&self->portal);
@@ -2153,8 +2156,14 @@ ptyxis_application_save_session_cb (GObject      *object,
 
   g_application_release (G_APPLICATION (self));
 
-  if (!g_file_replace_contents_finish (file, result, NULL, &error))
+  if (!g_file_replace_contents_finish (file, result, NULL, &error) &&
+      !self->skip_session_save &&
+      !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
     g_warning ("Failed to save session state: %s", error->message);
+
+  /* A save already in flight must not resurrect the pre-reset session. */
+  if (self->skip_session_save)
+    g_file_delete (file, NULL, NULL);
 }
 
 void
@@ -2164,6 +2173,11 @@ ptyxis_application_save_session (PtyxisApplication *self)
   g_autoptr(GBytes) bytes = NULL;
 
   g_return_if_fail (PTYXIS_IS_APPLICATION (self));
+
+  if (self->skip_session_save)
+    return;
+  if (!self->session_save_cancellable)
+    self->session_save_cancellable = g_cancellable_new ();
 
   if ((state = ptyxis_session_save (self)) &&
       (bytes = g_variant_get_data_as_bytes (state)))
@@ -2179,10 +2193,166 @@ ptyxis_application_save_session (PtyxisApplication *self)
                                            NULL,
                                            FALSE,
                                            G_FILE_CREATE_REPLACE_DESTINATION,
-                                           NULL,
+                                           self->session_save_cancellable,
                                            ptyxis_application_save_session_cb,
                                            g_object_ref (self));
     }
+}
+
+/* Snapshot only this application's schemas. GVariant text keeps the backup
+ * typed and portable without depending on the dconf command-line tool. */
+static gboolean
+snapshot_reset_settings (GPtrArray *targets, GKeyFile *backup, GSettings *settings,
+                         const char *group, GError **error)
+{
+  g_autoptr(GSettingsSchema) schema = NULL;
+  g_auto(GStrv) keys = NULL;
+  g_autofree char *path = NULL;
+
+  g_object_get (settings, "settings-schema", &schema, "path", &path, NULL);
+  keys = g_settings_schema_list_keys (schema);
+  g_key_file_set_string (backup, group, "_schema", g_settings_schema_get_id (schema));
+  g_key_file_set_string (backup, group, "_path", path);
+  for (guint i = 0; keys[i]; i++)
+    {
+      g_autoptr(GVariant) value = g_settings_get_user_value (settings, keys[i]);
+      if (value)
+        {
+          g_autofree char *text = g_variant_print (value, TRUE);
+          if (!g_settings_is_writable (settings, keys[i]))
+            {
+              g_set_error (error, G_IO_ERROR, G_IO_ERROR_PERMISSION_DENIED,
+                           "Cannot reset locked setting: %s", keys[i]);
+              return FALSE;
+            }
+          g_key_file_set_string (backup, group, keys[i], text);
+        }
+    }
+  g_ptr_array_add (targets, g_object_ref (settings));
+  return TRUE;
+}
+
+char *
+ptyxis_application_reset_preferences (PtyxisApplication *self, GError **error)
+{
+  g_autoptr(GPtrArray) targets = g_ptr_array_new_with_free_func (g_object_unref);
+  g_autoptr(GHashTable) uuids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+  g_autoptr(GKeyFile) backup = g_key_file_new ();
+  g_autoptr(GSettings) settings = g_settings_new (APP_SCHEMA_ID);
+  g_autoptr(GSettings) shortcuts = g_settings_new (APP_SCHEMA_SHORTCUTS_ID);
+  g_auto(GStrv) profiles = g_settings_get_strv (settings, "profile-uuids");
+  g_autofree char *root = g_build_filename (g_get_user_state_dir (), APP_ID, "reset-backups", NULL);
+  g_autofree char *directory = NULL;
+  g_autofree char *settings_file = NULL;
+  g_autofree char *source_path = g_build_filename (g_get_user_config_dir (), APP_ID, NULL);
+  g_autoptr(GFile) source = g_file_new_for_path (source_path);
+  g_autoptr(GFile) destination = NULL;
+  g_autoptr(PtyxisProfile) fresh_profile = NULL;
+  GHashTableIter iter;
+  gpointer uuid;
+
+  g_return_val_if_fail (PTYXIS_IS_APPLICATION (self), NULL);
+  if (!snapshot_reset_settings (targets, backup, settings, "Application", error) ||
+      !snapshot_reset_settings (targets, backup, shortcuts, "Shortcuts", error))
+    return NULL;
+  for (guint i = 0; profiles[i]; i++)
+    g_hash_table_add (uuids, g_strdup (profiles[i]));
+  /* Include profiles still used by open tabs after removal from Preferences. */
+  for (const GList *w = gtk_application_get_windows (GTK_APPLICATION (self)); w; w = w->next)
+    if (PTYXIS_IS_WINDOW (w->data))
+      {
+        g_autoptr(GListModel) pages = ptyxis_window_list_pages (w->data);
+        for (guint i = 0; i < g_list_model_get_n_items (pages); i++)
+          {
+            g_autoptr(AdwTabPage) page = g_list_model_get_item (pages, i);
+            PtyxisProfile *profile = ptyxis_tab_get_profile (PTYXIS_TAB (adw_tab_page_get_child (page)));
+            g_hash_table_add (uuids, g_strdup (ptyxis_profile_get_uuid (profile)));
+          }
+      }
+  g_hash_table_iter_init (&iter, uuids);
+  while (g_hash_table_iter_next (&iter, &uuid, NULL))
+    {
+      g_autofree char *group = g_strdup_printf ("Profiles/%s", (char *) uuid);
+      g_autofree char *path = g_strdup_printf (APP_SCHEMA_PATH "Profiles/%s/", (char *) uuid);
+      g_autoptr(GSettings) profile = g_settings_new_with_path (APP_SCHEMA_PROFILE_ID, path);
+      if (!snapshot_reset_settings (targets, backup, profile, group, error))
+        return NULL;
+    }
+  if (g_mkdir_with_parents (root, 0700) != 0)
+    {
+      g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_FAILED, "Cannot create reset backup directory");
+      return NULL;
+    }
+  directory = g_build_filename (root, "reset-XXXXXX", NULL);
+  if (!g_mkdtemp_full (directory, 0700))
+    {
+      g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_FAILED, "Cannot create reset backup");
+      return NULL;
+    }
+  settings_file = g_build_filename (directory, "settings.ini", NULL);
+  if (!g_key_file_save_to_file (backup, settings_file, error))
+    return NULL;
+  {
+    g_autoptr(GVariant) live_session = ptyxis_session_save (self);
+    g_autofree char *path = g_build_filename (directory, "live-session.gvariant", NULL);
+    if (!g_file_set_contents (path, g_variant_get_data (live_session),
+                             g_variant_get_size (live_session), error))
+      return NULL;
+  }
+  destination = g_file_new_build_filename (directory, "config", NULL);
+  if (g_file_query_exists (source, NULL) &&
+      !g_file_move (source, destination, G_FILE_COPY_NONE, NULL, NULL, NULL, error))
+    return NULL;
+
+  /* No fallible operations remain after the backup succeeds. */
+  self->skip_session_save = TRUE;
+  if (self->session_save_cancellable)
+    g_cancellable_cancel (self->session_save_cancellable);
+  g_clear_pointer (&self->session, g_variant_unref);
+  self->has_restored_session = TRUE;
+  for (GList *w = gtk_application_get_windows (GTK_APPLICATION (self)); w; )
+    {
+      GList *next = w->next;
+      if (PTYXIS_IS_PREFERENCES_WINDOW (w->data))
+        {
+          g_autoptr(GtkWindow) preferences = g_object_ref (w->data);
+          gtk_window_destroy (preferences);
+          /* Tear down bidirectional bindings before resetting their sources. */
+          g_object_run_dispose (G_OBJECT (preferences));
+        }
+      w = next;
+    }
+  for (guint i = 0; i < targets->len; i++)
+    {
+      GSettings *target = g_ptr_array_index (targets, i);
+      g_autoptr(GSettingsSchema) schema = NULL;
+      g_auto(GStrv) keys = NULL;
+      g_object_get (target, "settings-schema", &schema, NULL);
+      keys = g_settings_schema_list_keys (schema);
+      g_settings_delay (target);
+      for (guint k = 0; keys[k]; k++)
+        g_settings_reset (target, keys[k]);
+    }
+  /* Apply profiles/shortcuts before resetting the application profile list. */
+  for (guint i = 1; i < targets->len; i++)
+    g_settings_apply (g_ptr_array_index (targets, i));
+  g_settings_apply (settings);
+  fresh_profile = ptyxis_application_dup_default_profile (self);
+  for (const GList *w = gtk_application_get_windows (GTK_APPLICATION (self)); w; w = w->next)
+    if (PTYXIS_IS_WINDOW (w->data))
+      {
+        g_autoptr(GListModel) pages = ptyxis_window_list_pages (w->data);
+        for (guint i = 0; i < g_list_model_get_n_items (pages); i++)
+          {
+            g_autoptr(AdwTabPage) page = g_list_model_get_item (pages, i);
+            PtyxisTab *tab = PTYXIS_TAB (adw_tab_page_get_child (page));
+            g_object_set_data (G_OBJECT (tab), "tab-color-override", NULL);
+            g_object_set_data (G_OBJECT (tab), "tab-color-inactive-override", NULL);
+            ptyxis_tab_apply_profile (tab, fresh_profile);
+          }
+      }
+  g_settings_sync ();
+  return g_steal_pointer (&directory);
 }
 
 gboolean

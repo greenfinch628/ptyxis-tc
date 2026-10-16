@@ -1,3 +1,8 @@
+# Fedora package revision 7 — 2026-10-16
+
+See [DEPLOYMENT-50.2-7.md](DEPLOYMENT-50.2-7.md) for the current Fedora build,
+four-machine installed-package verification, and backups. Ubuntu was not rebuilt.
+
 # Baseline package validation — 2026-10-15
 
 App 50.2, package revision 6. Built from f31f445 application code plus the

@@ -1,3 +1,4 @@
+#include "ptyxis-tab-color-defaults.h"
 /* Local tab coloring extension for Ptyxis 50.1. SPDX-License-Identifier: GPL-3.0-or-later */
 #ifndef COLOR_TAB_TESTING
 #include "ptyxis-terminal.h"
@@ -70,6 +71,79 @@ color_tab_value (PtyxisTab *tab, GKeyFile *config)
   return g_key_file_get_string (config, "Hosts", "default", NULL);
 }
 
+/* Invalid configuration values must never reach the CSS parser. */
+static char *
+color_tab_setting (GKeyFile *config, const char *group, const char *key)
+{
+  g_autofree char *value = g_key_file_get_string (config, group, key, NULL);
+  GdkRGBA rgba;
+  return value && gdk_rgba_parse (&rgba, value) ? gdk_rgba_to_string (&rgba) : NULL;
+}
+
+static char *
+color_tab_inactive_value (PtyxisTab *tab, GKeyFile *config)
+{
+  const char *manual = g_object_get_data (G_OBJECT (tab), "tab-color-inactive-override");
+  g_autofree char *host = color_tab_hostname (tab, config);
+  g_autofree char *value = NULL;
+  char *dot;
+  GdkRGBA rgba;
+
+  if (manual)
+    return gdk_rgba_parse (&rgba, manual) ? gdk_rgba_to_string (&rgba) : NULL;
+  /* A manual active color overrides the host's entire automatic pair. */
+  if (g_object_get_data (G_OBJECT (tab), "tab-color-override"))
+    return NULL;
+  value = color_tab_setting (config, "InactiveHosts", host);
+  if (value)
+    return g_steal_pointer (&value);
+  if ((dot = strchr (host, '.')))
+    *dot = 0;
+  value = color_tab_setting (config, "InactiveHosts", host);
+  if (value)
+    return g_steal_pointer (&value);
+  return color_tab_setting (config, "InactiveHosts", "default");
+}
+
+static void
+color_tab_backgrounds (PtyxisTab *tab, GKeyFile *config, char **active, char **inactive)
+{
+  g_autofree char *value = color_tab_value (tab, config);
+  GdkRGBA rgba;
+
+  *active = value && gdk_rgba_parse (&rgba, value)
+    ? gdk_rgba_to_string (&rgba) : color_tab_setting (config, "Appearance", "active-background");
+  if (!*active)
+    *active = g_strdup (PTYXIS_TAB_ACTIVE_DEFAULT);
+  *inactive = color_tab_inactive_value (tab, config);
+  if (!*inactive)
+    *inactive = color_tab_setting (config, "Appearance", "inactive-background");
+  if (!*inactive)
+    *inactive = g_strdup (PTYXIS_TAB_INACTIVE_DEFAULT);
+}
+
+static char *
+color_tab_css (PtyxisTab *tab, GKeyFile *config)
+{
+  g_autofree char *active = NULL;
+  g_autofree char *inactive = NULL;
+  g_autofree char *active_fg = color_tab_setting (config, "Appearance", "active-foreground");
+  g_autofree char *inactive_fg = color_tab_setting (config, "Appearance", "inactive-foreground");
+  const char *active_text = active_fg ? active_fg : PTYXIS_TAB_TEXT_DEFAULT;
+  const char *inactive_text = inactive_fg ? inactive_fg : PTYXIS_TAB_TEXT_DEFAULT;
+
+  color_tab_backgrounds (tab, config, &active, &inactive);
+
+  /* GTK changes :selected synchronously; no timer is needed for switching. */
+  return g_strdup_printf (
+    "tab { background-color: %s; background-image: none; color: %s; "
+    "border-bottom: 3px solid transparent; }"
+    "tab:selected { background-color: %s; background-image: none; color: %s; "
+    "border-bottom-color: #ffffff; box-shadow: none; }",
+    inactive ? inactive : "@window_bg_color", inactive_text,
+    active ? active : "@window_bg_color", active_text);
+}
+
 /* AdwTab's page property is introspected instead of linking private symbols.
  * If a future libadwaita changes it, coloring safely stops for that widget. */
 static void
@@ -80,33 +154,22 @@ color_tab_widgets (GtkWidget *widget, GKeyFile *config)
     {
       g_autoptr(AdwTabPage) page = NULL;
       g_autofree char *value = NULL;
+      g_autofree char *css = NULL;
       g_object_get (widget, "page", &page, NULL);
       if (page && PTYXIS_IS_TAB (adw_tab_page_get_child (page)))
-        value = color_tab_value (PTYXIS_TAB (adw_tab_page_get_child (page)), config);
-      if (!g_object_get_data (G_OBJECT (widget), "tab-color-provider") ||
-          g_strcmp0 (value, g_object_get_data (G_OBJECT (widget), "tab-color-applied")))
+        {
+          PtyxisTab *tab = PTYXIS_TAB (adw_tab_page_get_child (page));
+          value = color_tab_value (tab, config);
+          css = color_tab_css (tab, config);
+        }
+      if (css && g_strcmp0 (css, g_object_get_data (G_OBJECT (widget), "tab-color-css")))
         {
           GtkCssProvider *provider = g_object_get_data (G_OBJECT (widget), "tab-color-provider");
-          GdkRGBA rgba;
           if (provider)
             gtk_style_context_remove_provider (gtk_widget_get_style_context (widget), GTK_STYLE_PROVIDER (provider));
           g_object_set_data (G_OBJECT (widget), "tab-color-provider", NULL);
           g_object_set_data_full (G_OBJECT (widget), "tab-color-applied", g_strdup (value), g_free);
-          g_autofree char *css = NULL;
-          if (value && gdk_rgba_parse (&rgba, value))
-            {
-              g_autofree char *css_color = gdk_rgba_to_string (&rgba);
-              double luminance = .2126 * rgba.red + .7152 * rgba.green + .0722 * rgba.blue;
-              const char *foreground = luminance > .5 ? "#141414" : "#ffffff";
-              css = g_strdup_printf (
-                "tab { background-color: mix(#dddddd, %s, 0.40); "
-                "background-image: none; color: #141414; border-bottom: 3px solid transparent; }"
-                "tab:selected { background-color: %s; color: %s; "
-                "background-image: none; border-bottom-color: #ffffff; box-shadow: none; }",
-                css_color, css_color, foreground);
-            }
-          else
-            css = g_strdup ("tab { border-bottom: 3px solid transparent; } tab:selected { background-image: none; border-bottom-color: #ffffff; box-shadow: none; }");
+          g_object_set_data_full (G_OBJECT (widget), "tab-color-css", g_strdup (css), g_free);
           provider = gtk_css_provider_new ();
           gtk_css_provider_load_from_string (provider, css);
           gtk_style_context_add_provider (gtk_widget_get_style_context (widget), GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION + 10);
@@ -139,7 +202,7 @@ color_chosen (GObject *source, GAsyncResult *result, gpointer data)
   GdkRGBA *rgba = gtk_color_dialog_choose_rgba_finish (GTK_COLOR_DIALOG (source), result, &error);
   if (rgba)
     {
-      g_object_set_data_full (G_OBJECT (tab), "tab-color-override", gdk_rgba_to_string (rgba), g_free);
+      g_object_set_data_full (G_OBJECT (tab), g_object_get_data (source, "tab-color-key"), gdk_rgba_to_string (rgba), g_free);
       gdk_rgba_free (rgba);
     }
 }
@@ -153,20 +216,30 @@ color_tab_action (GtkWidget *widget, const char *name, GVariant *parameter)
   if (!tab)
     return;
   if (g_str_equal (name, "win.tab-color-auto"))
-    g_object_set_data (G_OBJECT (tab), "tab-color-override", NULL);
+    {
+      g_object_set_data (G_OBJECT (tab), "tab-color-override", NULL);
+      g_object_set_data (G_OBJECT (tab), "tab-color-inactive-override", NULL);
+      color_tabs_refresh (self);
+    }
   else
     {
       g_autoptr(GtkColorDialog) dialog = gtk_color_dialog_new ();
       g_autoptr(GKeyFile) config = g_key_file_new ();
       g_autofree char *path = g_build_filename (g_get_user_config_dir (), APP_ID, "tab-colors.ini", NULL);
-      g_autofree char *value = NULL;
+      g_autofree char *active_color = NULL;
+      g_autofree char *inactive_color = NULL;
+      const char *value;
       GdkRGBA initial;
       gboolean has_initial;
+      gboolean inactive = g_str_equal (name, "win.tab-color-inactive");
 
       g_key_file_load_from_file (config, path, G_KEY_FILE_NONE, NULL);
-      value = color_tab_value (PTYXIS_TAB (tab), config);
+      g_object_set_data (G_OBJECT (dialog), "tab-color-key",
+                         (gpointer) (inactive ? "tab-color-inactive-override" : "tab-color-override"));
+      color_tab_backgrounds (PTYXIS_TAB (tab), config, &active_color, &inactive_color);
+      value = inactive ? inactive_color : active_color;
       has_initial = value && gdk_rgba_parse (&initial, value);
-      gtk_color_dialog_set_title (dialog, "Tab Background Color");
+      gtk_color_dialog_set_title (dialog, inactive ? "Inactive Tab Background Color" : "Active Tab Background Color");
       gtk_color_dialog_set_with_alpha (dialog, FALSE);
       gtk_color_dialog_choose_rgba (dialog, GTK_WINDOW (self), has_initial ? &initial : NULL, NULL, color_chosen, g_object_ref (tab));
     }

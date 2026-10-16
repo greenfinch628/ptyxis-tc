@@ -86,6 +86,8 @@ ptyxis_session_save (PtyxisApplication *app)
                   const char *container_id = NULL;
                   const char *window_title;
                   const char *uuid;
+                  const char *tab_color;
+                  const char *inactive_color;
                   gboolean is_active;
                   PtyxisZoomLevel zoom;
                   guint rows;
@@ -121,9 +123,12 @@ ptyxis_session_save (PtyxisApplication *app)
                     container_id = ptyxis_ipc_container_get_id (container);
 
                   g_variant_builder_open (&builder, G_VARIANT_TYPE ("a{sv}"));
-                  const char *tab_color = g_object_get_data (G_OBJECT (tab), "tab-color-override");
+                  tab_color = g_object_get_data (G_OBJECT (tab), "tab-color-override");
                   if (tab_color != NULL)
                     g_variant_builder_add (&builder, "{sv}", "tab-color-override", g_variant_new_string (tab_color));
+                  inactive_color = g_object_get_data (G_OBJECT (tab), "tab-color-inactive-override");
+                  if (inactive_color != NULL)
+                    g_variant_builder_add (&builder, "{sv}", "tab-color-inactive-override", g_variant_new_string (inactive_color));
                   g_variant_builder_add_parsed (&builder, "{'profile', <%s>}", uuid);
                   g_variant_builder_add_parsed (&builder, "{'pinned', <%b>}", pinned);
                   g_variant_builder_add_parsed (&builder, "{'size', <(%u,%u)>}", columns, rows);
@@ -209,6 +214,8 @@ ptyxis_session_restore (PtyxisApplication *app,
           const char *container;
           const char *cwd;
           const char *window_title;
+          const char *tab_color = NULL;
+          GdkRGBA restored_color;
           PtyxisTab *the_tab;
           guint32 zoom;
           gboolean is_active;
@@ -258,11 +265,13 @@ ptyxis_session_restore (PtyxisApplication *app,
 
           the_tab = ptyxis_tab_new (the_profile);
 
-          const char *tab_color = NULL;
-          GdkRGBA restored_color;
           if (g_variant_lookup (tab, "tab-color-override", "&s", &tab_color) &&
               gdk_rgba_parse (&restored_color, tab_color))
             g_object_set_data_full (G_OBJECT (the_tab), "tab-color-override", g_strdup (tab_color), g_free);
+
+          if (g_variant_lookup (tab, "tab-color-inactive-override", "&s", &tab_color) &&
+              gdk_rgba_parse (&restored_color, tab_color))
+            g_object_set_data_full (G_OBJECT (the_tab), "tab-color-inactive-override", g_strdup (tab_color), g_free);
 
           if (the_container != NULL)
             ptyxis_tab_set_container (the_tab, the_container);

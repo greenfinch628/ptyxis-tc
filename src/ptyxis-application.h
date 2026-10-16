@@ -34,6 +34,8 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (PtyxisApplication, ptyxis_application, PTYXIS, APPLICATION, AdwApplication)
 
+char               *ptyxis_application_reset_preferences          (PtyxisApplication    *self,
+                                                                   GError              **error);
 gint64              ptyxis_application_get_default_rlimit_nofile  (void);
 PtyxisApplication  *ptyxis_application_new                        (const char           *application_id,
                                                                    GApplicationFlags     flags);

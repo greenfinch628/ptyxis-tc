@@ -65,6 +65,12 @@
           </object>
         </child>
         <child>
+          <object class="AdwPreferencesGroup" id="tab_colors_group">
+            <property name="title" translatable="yes">Tab Colors</property>
+            <property name="description" translatable="yes">Default sets active background to #e8e8e8 and inactive background to #c0bfbc. Manual and hostname colors take priority. Text defaults to black.</property>
+          </object>
+        </child>
+        <child>
           <object class="AdwPreferencesGroup" id="opacity_group">
             <property name="visible">false</property>
             <child>
@@ -304,6 +310,25 @@
                     </child>
                   </object>
                 </property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes">Restore Initial Settings</property>
+            <property name="description" translatable="yes">Reset all Ptyxis-TC preferences, profiles, shortcuts, and tab colors. A backup is kept.</property>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Reset All Settings</property>
+                <child type="suffix">
+                  <object class="GtkButton">
+                    <property name="label" translatable="yes">Reset All Settings…</property>
+                    <property name="action-name">settings.reset-all</property>
+                    <property name="valign">center</property>
+                    <style><class name="destructive-action"/></style>
+                  </object>
+                </child>
               </object>
             </child>
           </object>

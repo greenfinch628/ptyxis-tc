@@ -1,0 +1,70 @@
+[
+  {
+    "host": "scopuli",
+    "version": "ptyxis-tc-50.2-7.fc44.x86_64",
+    "package_payload_verified": true,
+    "binary_sha256": "c057848b03c452e5c4c4f0ed5521bc16126b781393298f15df002c50b108f320",
+    "features": {
+      "master_reset": true,
+      "default_backgrounds": true,
+      "inactive_manual_color": true,
+      "black_text_default": true
+    },
+    "terminal_smoke": "PASS",
+    "settings_unchanged": true,
+    "regular_ptyxis_unchanged": true,
+    "backup": "/home/rczys/.local/state/org.gnome.Ptyxis.TabColors/install-backups/50.2-7-20261016T210350285808Z",
+    "verification_logs": "/tmp/ptyxis-tc-installed-check-x29tpkie"
+  },
+  {
+    "host": "rocinante",
+    "version": "ptyxis-tc-50.2-7.fc44.x86_64",
+    "package_payload_verified": true,
+    "binary_sha256": "c057848b03c452e5c4c4f0ed5521bc16126b781393298f15df002c50b108f320",
+    "features": {
+      "master_reset": true,
+      "default_backgrounds": true,
+      "inactive_manual_color": true,
+      "black_text_default": true
+    },
+    "terminal_smoke": "PASS",
+    "settings_unchanged": true,
+    "regular_ptyxis_unchanged": true,
+    "backup": "/home/rczys/.local/state/org.gnome.Ptyxis.TabColors/install-backups/50.2-7-20261016T210347972154Z",
+    "verification_logs": "/tmp/ptyxis-tc-installed-check-yl__r2yl"
+  },
+  {
+    "host": "karakum",
+    "version": "ptyxis-tc-50.2-7.fc44.x86_64",
+    "package_payload_verified": true,
+    "binary_sha256": "c057848b03c452e5c4c4f0ed5521bc16126b781393298f15df002c50b108f320",
+    "features": {
+      "master_reset": true,
+      "default_backgrounds": true,
+      "inactive_manual_color": true,
+      "black_text_default": true
+    },
+    "terminal_smoke": "PASS",
+    "settings_unchanged": true,
+    "regular_ptyxis_unchanged": true,
+    "backup": "/home/rczys/.local/state/org.gnome.Ptyxis.TabColors/install-backups/50.2-7-20261016T210345164450Z",
+    "verification_logs": "/tmp/ptyxis-tc-installed-check-bl58acpj"
+  },
+  {
+    "host": "narlikar",
+    "version": "ptyxis-tc-50.2-7.fc44.x86_64",
+    "package_payload_verified": true,
+    "binary_sha256": "c057848b03c452e5c4c4f0ed5521bc16126b781393298f15df002c50b108f320",
+    "features": {
+      "master_reset": true,
+      "default_backgrounds": true,
+      "inactive_manual_color": true,
+      "black_text_default": true
+    },
+    "terminal_smoke": "PASS",
+    "settings_unchanged": true,
+    "regular_ptyxis_unchanged": true,
+    "backup": "/home/rczys/.local/state/org.gnome.Ptyxis.TabColors/install-backups/50.2-7-20261016T210346612471Z",
+    "verification_logs": "/tmp/ptyxis-tc-installed-check-52qda7co"
+  }
+]
