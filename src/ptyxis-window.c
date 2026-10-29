@@ -398,7 +398,9 @@ update_visible_and_maybe_close (PtyxisWindow *self)
     }
 
   was_visible = gtk_widget_get_visible (GTK_WIDGET (self->tab_bar));
-  visible = !self->single_terminal_mode && n_pages > 1;
+  /* A detached, single-tab window must retain a drag handle and drop target.
+   * AdwTabBar already handles native reordering and cross-window transfers. */
+  visible = !self->single_terminal_mode;
 
   if (visible != was_visible)
     {
@@ -410,6 +412,19 @@ update_visible_and_maybe_close (PtyxisWindow *self)
       else
         gtk_widget_remove_css_class (GTK_WIDGET (self), "has-tab-bar");
     }
+}
+
+static void
+ptyxis_window_notify_is_transferring_page_cb (PtyxisWindow *self,
+                                             GParamSpec   *pspec,
+                                             AdwTabView   *tab_view)
+{
+  g_assert (PTYXIS_IS_WINDOW (self));
+  g_assert (ADW_IS_TAB_VIEW (tab_view));
+
+  /* A native drag temporarily keeps an empty source window alive. Close it
+   * once the transfer ends, including a cancelled new-window drag. */
+  update_visible_and_maybe_close (self);
 }
 
 static void
@@ -2086,6 +2101,7 @@ ptyxis_window_class_init (PtyxisWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, ptyxis_window_menu_search_activate_cb);
   gtk_widget_class_bind_template_callback (widget_class, ptyxis_window_menu_stop_search);
   gtk_widget_class_bind_template_callback (widget_class, ptyxis_window_notify_menu_n_items_cb);
+  gtk_widget_class_bind_template_callback (widget_class, ptyxis_window_notify_is_transferring_page_cb);
   gtk_widget_class_bind_template_callback (widget_class, ptyxis_window_page_attached_cb);
   gtk_widget_class_bind_template_callback (widget_class, ptyxis_window_page_detached_cb);
   gtk_widget_class_bind_template_callback (widget_class, ptyxis_window_notify_selected_page_cb);

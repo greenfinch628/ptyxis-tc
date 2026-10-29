@@ -31,6 +31,11 @@ The warranty terms in the GNU General Public License continue to apply; see
 - A 3-pixel white underline identifies the active tab. Default backgrounds are
   active #e8e8e8 and inactive #c0bfbc, with independent color overrides.
 - Manual colors retained during session restoration.
+- Drag tabs between existing windows, including single-tab windows, or drag out
+  to create a new window. Drop at the desired position in the destination tab bar;
+  sessions, history, profiles and tab colors stay with the tab. Empty source
+  windows close when the move finishes. Normal windows keep a tab bar even with
+  one tab; standalone command windows retain their existing behavior.
 - Right-click copies selected text and clears the selection; with no selection, it pastes.
 - Enable or disable right-click copy/paste in Preferences → Behavior → Mouse.
   It is enabled by default; middle-click in the terminal text area opens the context menu

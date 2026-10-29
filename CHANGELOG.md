@@ -1,3 +1,7 @@
+# ptyxis-tc - 50.2-8
+
+- 2026-10-29T00:06:44Z — Fixed: Keep normal single-tab window tab bars available for native cross-window dragging and close empty windows when a drag finishes; preserve sessions, profiles and colors.
+
 # ptyxis-tc - 50.2-7
 
 - 2026-10-16T21:02:13Z — Changed: Package the tested tab-color and master-reset updates for Fedora 44 deployment to Scopuli, Rocinante, Karakum, and Narlikar, preserving existing per-user settings.

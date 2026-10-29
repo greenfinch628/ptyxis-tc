@@ -77,3 +77,24 @@ and are not directly runnable from this checkout.
 
 See ARCHIVE-NOTES.md for detailed behavior and original validation.
 Its archive installation instructions do not apply to this Git checkout.
+
+
+## Moving tabs between windows
+
+Drag a tab out to create a window; drag its tab back onto another window's tab
+bar to reattach it. Normal windows show the tab bar even for one tab. Drop at the
+intended tab position. This uses libadwaita's existing AdwTabView/AdwTabBar transfer
+mechanism, retaining the same terminal, running process, profile and color state.
+Empty source windows close when the native transfer finishes. Standalone command
+windows continue to hide the tab bar.
+
+The focused integration fixture can be built with:
+
+    python3 custom/build-tab-transfer-test.py build-tc
+
+Run `build-tc/test-tab-transfer` with an isolated D-Bus session, Xvfb, memory
+GSettings, temporary XDG config/data/cache directories and PTYXIS_TEST_HEARTBEAT
+pointing at a temporary file. It checks real window widgets and native page
+transfers, running process/PTY/history continuity, Arthur profile identity,
+manual/automatic colors, order and empty-window cleanup. Physical mouse dragging
+on the Wayland desktop remains a separate interactive check.
