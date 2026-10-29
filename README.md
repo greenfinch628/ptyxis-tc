@@ -50,6 +50,20 @@ The warranty terms in the GNU General Public License continue to apply; see
 Custom changes started on Ptyxis 50.1. The `main` branch preserves both the
 custom changes and newer upstream history, currently reporting version 50.2.
 
+## Moving tabs between windows
+
+Press and hold the **left mouse button on the tab’s name in the tab bar**.
+Dragging the window title bar moves the whole window instead.
+
+- To detach: drag the tab completely outside the window onto empty desktop space,
+  then release. Dropping in the same window’s terminal area keeps it in that window.
+- To reattach or move: drag the tab’s name onto the destination window’s tab bar,
+  place it between the desired neighboring tabs, then release.
+
+This works when the source or destination has only one tab. The empty source
+window closes after a successful move. Shells, running programs, history,
+profiles and tab colors stay with their tabs.
+
 ## Build on Fedora
 
 Clone the repository:
