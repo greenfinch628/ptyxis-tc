@@ -113,6 +113,7 @@ ptyxis_include_directories = [
 executable('ptyxis', ptyxis_sources + ptyxis_agent_ipc,
          dependencies: ptyxis_deps,
               install: true,
+        install_rpath: get_option('prefix') / get_option('libdir') / 'ptyxis-tc',
                c_args: ptyxis_c_args,
   include_directories: ptyxis_include_directories,
 )

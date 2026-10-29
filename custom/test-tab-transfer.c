@@ -99,12 +99,14 @@ int main (int argc, char **argv)
   g_autofree char *after_color = color_tab_value (other, colors);
   g_assert_cmpstr (before_color, ==, after_color);
   g_assert_cmpstr (after_color, ==, "#26a269");
+  spin (50);
   g_assert_false (gtk_widget_get_visible (GTK_WIDGET (first)));
   g_assert_null (g_list_find (gtk_application_get_windows (GTK_APPLICATION (app)), first));
   /* End-of-drag notification must close an empty window which was kept alive
    * during a native drag (including cancelled new-window transfers). */
   PtyxisWindow *empty = g_object_ref (ptyxis_window_new_empty ());
   g_object_notify (G_OBJECT (empty->tab_view), "is-transferring-page");
+  spin (50);
   g_assert_null (g_list_find (gtk_application_get_windows (GTK_APPLICATION (app)), empty));
   g_object_unref (empty);
   ptyxis_ipc_process_call_send_signal (process, SIGTERM, NULL, NULL, NULL);

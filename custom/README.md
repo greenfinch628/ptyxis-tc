@@ -28,14 +28,14 @@ Original copyright and license notices are retained.
 
 Install dependencies:
 
-    sudo dnf install meson ninja-build gcc gettext-devel glib2-devel gtk4-devel libadwaita-devel vte291-gtk4-devel json-glib-devel libportal-devel libportal-gtk4-devel desktop-file-utils
+    sudo dnf install meson ninja-build gcc gettext-devel glib2-devel gtk4-devel libadwaita-devel vte291-gtk4-devel json-glib-devel libportal-devel libportal-gtk4-devel desktop-file-utils sassc fribidi-devel appstream-devel
 
 Clone the custom repository:
 
     git clone git@github.com:greenfinch628/ptyxis-tc.git
     cd ptyxis-tc
 
-Requires Meson >= 1.0, GLib >= 2.80, GTK >= 4.14, libadwaita >= 1.8,
+Requires Meson >= 1.0, GLib >= 2.84, GTK >= 4.21.1, the bundled libadwaita 1.9.4,
 JSON-GLib >= 1.6, and VTE GTK4 >= 0.79.
 
 Run these commands from the repository directory:
@@ -92,9 +92,17 @@ The focused integration fixture can be built with:
 
     python3 custom/build-tab-transfer-test.py build-tc
 
-Run `build-tc/test-tab-transfer` with an isolated D-Bus session, Xvfb, memory
-GSettings, temporary XDG config/data/cache directories and PTYXIS_TEST_HEARTBEAT
+Run `build-tc/src/test-tab-transfer` with an isolated D-Bus session, Xvfb, memory
+GSettings, GDK_BACKEND=x11, temporary XDG config/data/cache directories and PTYXIS_TEST_HEARTBEAT
 pointing at a temporary file. It checks real window widgets and native page
 transfers, running process/PTY/history continuity, Arthur profile identity,
 manual/automatic colors, order and empty-window cleanup. Physical mouse dragging
 on the Wayland desktop remains a separate interactive check.
+
+
+The app builds a pinned, private libadwaita dependency to remove the native bar’s
+one-tab drag restriction. Its original source archive and single-line patch are
+tracked, and the executable RUNPATH selects only that private copy. Fedora’s
+system libadwaita is never replaced. Dependency/build provenance is in vendor/.
+Dropping on the same window’s terminal content is a move within that view; drop
+onto empty desktop space to detach, or another window’s bar to reattach.

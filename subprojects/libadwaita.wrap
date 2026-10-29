@@ -1,0 +1,6 @@
+[wrap-file]
+directory = libadwaita-1.9.4
+source_url = https://download.gnome.org/sources/libadwaita/1.9/libadwaita-1.9.4.tar.xz
+source_filename = libadwaita-1.9.4.tar.xz
+source_hash = f5ab3453ee743dc293cdf96d6821789cd20e8d125d9b41637703c12bfa4162ee
+diff_files = libadwaita-single-tab-drag.patch

@@ -12,7 +12,7 @@ command[-1] = str(root/'custom/test-tab-transfer.c')
 subprocess.run(command, cwd=build, check=True)
 commands = subprocess.check_output(['ninja','-t','commands','src/ptyxis'], cwd=build, text=True)
 command = shlex.split(commands.splitlines()[-1])
-command[command.index('-o')+1] = str(build/'test-tab-transfer')
+command[command.index('-o')+1] = str(build/'src/test-tab-transfer')
 command[command.index('src/ptyxis.p/main.c.o')] = obj
 command.remove('src/ptyxis.p/ptyxis-window.c.o')
 subprocess.run(command, cwd=build, check=True)

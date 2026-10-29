@@ -1,3 +1,13 @@
 .flatpak-builder
 
 /build-tc/
+
+# Meson-extracted private dependency; only the pinned source archive is tracked.
+/subprojects/.wraplock
+/subprojects/libadwaita-1.9.4/
+/subprojects/sassc/
+/subprojects/libsass/
+/subprojects/sassc.wrap
+/subprojects/libsass.wrap
+/subprojects/packagecache/*
+!/subprojects/packagecache/libadwaita-1.9.4.tar.xz

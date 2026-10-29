@@ -2,7 +2,7 @@
 %global tc_prefix /opt/ptyxis-tab-colors-50.1
 Name: ptyxis-tc
 Version: 50.2
-Release: 8%{?dist}
+Release: 9%{?dist}
 Summary: Ptyxis with hostname tab colors and right-click clipboard shortcuts
 License: GPL-3.0-or-later
 URL: https://github.com/greenfinch628/ptyxis-tc
@@ -10,6 +10,10 @@ Source0: %{name}-%{version}.tar.gz
 BuildRequires: gcc, meson, ninja-build, gettext-devel, desktop-file-utils
 BuildRequires: pkgconfig(glib-2.0), pkgconfig(gtk4), pkgconfig(libadwaita-1)
 BuildRequires: pkgconfig(json-glib-1.0), pkgconfig(vte-2.91-gtk4), pkgconfig(libportal-gtk4)
+BuildRequires: sassc, pkgconfig(fribidi), pkgconfig(appstream)
+Provides: bundled(libadwaita) = 1.9.4
+# Do not advertise a private library as a system-wide soname provider.
+%global __provides_exclude_from ^%{tc_prefix}/.*$
 Requires: bash
 
 %description
@@ -46,7 +50,7 @@ rm -f %{buildroot}%{tc_prefix}/share/applications/mimeinfo.cache
 /usr/bin/glib-compile-schemas %{tc_prefix}/share/glib-2.0/schemas || :
 
 %files
-%license COPYING
+%license COPYING vendor/libadwaita-COPYING
 %doc custom/README.md tab-colors.example.ini
 %config(noreplace) %{_sysconfdir}/ptyxis-tc/tab-colors.ini
 %{tc_prefix}
@@ -59,6 +63,10 @@ rm -f %{buildroot}%{tc_prefix}/share/applications/mimeinfo.cache
 %{_datadir}/icons/hicolor/symbolic/apps/org.gnome.Ptyxis.TabColors-symbolic.svg
 
 %changelog
+* Wed Oct 28 2026 Bob Czys <greenfinch628@users.noreply.github.com> - 50.2-9
+- Bundle a private libadwaita with the native single-tab drag restriction removed.
+- Defer empty-window destruction until native transfer notification completes.
+
 * Wed Oct 28 2026 Bob Czys <greenfinch628@users.noreply.github.com> - 50.2-8
 - Keep single-tab bars available for native detach, reattach and ordered window transfers.
 - Close empty source windows after drag completion; preserve session/profile/color state.

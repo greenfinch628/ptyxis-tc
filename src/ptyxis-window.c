@@ -414,6 +414,13 @@ update_visible_and_maybe_close (PtyxisWindow *self)
     }
 }
 
+static gboolean
+ptyxis_window_finish_transfer_cb (gpointer data)
+{
+  update_visible_and_maybe_close (PTYXIS_WINDOW (data));
+  return G_SOURCE_REMOVE;
+}
+
 static void
 ptyxis_window_notify_is_transferring_page_cb (PtyxisWindow *self,
                                              GParamSpec   *pspec,
@@ -422,9 +429,13 @@ ptyxis_window_notify_is_transferring_page_cb (PtyxisWindow *self,
   g_assert (PTYXIS_IS_WINDOW (self));
   g_assert (ADW_IS_TAB_VIEW (tab_view));
 
-  /* A native drag temporarily keeps an empty source window alive. Close it
-   * once the transfer ends, including a cancelled new-window drag. */
-  update_visible_and_maybe_close (self);
+  /* Libadwaita is notifying every tab view while iterating its global list.
+   * Defer destruction until that iteration and the native drag have finished. */
+  if (!adw_tab_view_get_is_transferring_page (tab_view))
+    g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
+                     ptyxis_window_finish_transfer_cb,
+                     g_object_ref (self),
+                     g_object_unref);
 }
 
 static void

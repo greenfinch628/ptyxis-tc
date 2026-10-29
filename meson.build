@@ -189,6 +189,13 @@ endforeach
 
 subdir('data')
 subdir('agent')
+# The native tab bar otherwise refuses to drag a window's only remaining tab.
+# Keep this narrowly patched dependency private to Ptyxis-TC, never system-wide.
+subproject('libadwaita', default_options: [
+  'introspection=disabled', 'vapi=false', 'tests=false', 'examples=false',
+  'documentation=false', 'package_subdir=ptyxis-tc',
+])
+
 subdir('src')
 subdir('po')
 subdir('man')

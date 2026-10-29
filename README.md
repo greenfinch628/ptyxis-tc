@@ -32,7 +32,8 @@ The warranty terms in the GNU General Public License continue to apply; see
   active #e8e8e8 and inactive #c0bfbc, with independent color overrides.
 - Manual colors retained during session restoration.
 - Drag tabs between existing windows, including single-tab windows, or drag out
-  to create a new window. Drop at the desired position in the destination tab bar;
+  onto an empty desktop area to create a new window. Drop at the desired position
+  in another window’s tab bar to reattach it;
   sessions, history, profiles and tab colors stay with the tab. Empty source
   windows close when the move finishes. Normal windows keep a tab bar even with
   one tab; standalone command windows retain their existing behavior.
@@ -63,7 +64,7 @@ Install build dependencies:
 ```bash
 sudo dnf install meson ninja-build gcc gettext-devel glib2-devel gtk4-devel \
   libadwaita-devel vte291-gtk4-devel json-glib-devel libportal-devel \
-  libportal-gtk4-devel desktop-file-utils
+  libportal-gtk4-devel desktop-file-utils sassc fribidi-devel appstream-devel
 ```
 
 Configure, build, and run the upstream checks:
@@ -272,3 +273,8 @@ The original upstream README is preserved in [README-upstream.md](README-upstrea
 
 Revision 6 RPM and DEB packages, checksums, and corresponding source are
 available in [packages/](packages/README.md). Use the package matching your OS.
+
+
+The native single-tab transfer fix uses an application-private libadwaita 1.9.4,
+with just its one-tab drag restriction removed. The system library is unchanged.
+Pinned tabs retain upstream behavior. See [dependency provenance](vendor/README.md).

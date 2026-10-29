@@ -1,3 +1,7 @@
+# ptyxis-tc - 50.2-9
+
+- 2026-10-29T00:25:10Z — Fixed: Allow native dragging of a detached window’s only tab using an app-private libadwaita 1.9.4 patch; defer empty-window destruction until transfer notification completes.
+
 # ptyxis-tc - 50.2-8
 
 - 2026-10-29T00:06:44Z — Fixed: Keep normal single-tab window tab bars available for native cross-window dragging and close empty windows when a drag finishes; preserve sessions, profiles and colors.

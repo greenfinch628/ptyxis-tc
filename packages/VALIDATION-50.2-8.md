@@ -48,3 +48,11 @@ in the installed application before calling the interactive checklist complete.
 
 Checksums are in SHA256SUMS. The source archive excludes earlier package artifacts
 and contains the committed source and regression fixture used for this build.
+
+
+## Superseded by 50.2-9
+
+The subsequent user-performed mouse check exposed libadwaita’s separate
+single-tab drag restriction. Revision 8’s API-level tests did not exercise that
+native gesture condition. Revision 9 bundles a narrowly patched private copy of
+libadwaita and defers cleanup until native transfer notification completes.
