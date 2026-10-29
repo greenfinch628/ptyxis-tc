@@ -1,10 +1,43 @@
 --- a/src/adw-tab-box.c
 +++ b/src/adw-tab-box.c
-@@ -1669,7 +1669,6 @@
+@@ -20,6 +20,10 @@
+ #include "adw-timed-animation.h"
+ #include "adw-widget-utils-private.h"
+ #include <math.h>
++
++#ifdef GDK_WINDOWING_WAYLAND
++#include <gdk/wayland/gdkwayland.h>
++#endif
+ 
+ #define SPACING 5
+ #define DND_THRESHOLD_MULTIPLIER 4
+@@ -1669,7 +1673,6 @@
    if (!self->pinned &&
        self->pressed_tab != self->reorder_placeholder &&
        !is_touchscreen (gesture) &&
 -      adw_tab_view_get_n_pages (self->view) > 1 &&
        check_dnd_threshold (self, x, y)) {
      begin_drag (self, device);
+ 
+@@ -2481,7 +2484,20 @@
+                     GdkDragCancelReason  reason,
+                     GdkDrag             *drag)
+ {
+-  if (reason == GDK_DRAG_CANCEL_NO_TARGET) {
++  gboolean detach = reason == GDK_DRAG_CANCEL_NO_TARGET;
++
++#ifdef GDK_WINDOWING_WAYLAND
++  /* Wayland reports a drop rejected by another application as ERROR rather
++   * than NO_TARGET. Prefer keeping the detached tab in its own window. The
++   * protocol also uses this error for compositor cancellation (e.g. Escape),
++   * which cannot be distinguished here. Explicit USER_CANCELLED still restores
++   * the tab, and other backends retain their existing error handling. */
++  if (reason == GDK_DRAG_CANCEL_ERROR &&
++      GDK_IS_WAYLAND_DISPLAY (gdk_drag_get_display (drag)))
++    detach = TRUE;
++#endif
++
++  if (detach) {
+     detach_into_new_window (self);
+     drag_end (self, drag, TRUE);
  

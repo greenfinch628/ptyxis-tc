@@ -1,3 +1,7 @@
+# ptyxis-tc - 50.2-10
+
+- 2026-10-29T14:06:19Z — Fixed: Open dragged tabs in a new window when another app rejects them on Wayland; the indistinguishable compositor cancellation also detaches, while explicit user cancellation still restores the tab.
+
 # ptyxis-tc - 50.2-9
 
 - 2026-10-29T00:25:10Z — Fixed: Allow native dragging of a detached window’s only tab using an app-private libadwaita 1.9.4 patch; defer empty-window destruction until transfer notification completes.

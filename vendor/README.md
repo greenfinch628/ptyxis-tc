@@ -6,8 +6,12 @@ License: LGPL-2.1-or-later; see libadwaita-COPYING and the original archive.
 
 The checked-in archive is in subprojects/packagecache so builds need no download.
 Meson applies subprojects/packagefiles/libadwaita-single-tab-drag.patch: remove
-only the native reorder handler's n-pages > 1 restriction. The existing library
-handles drag icons, data transfer, ordered insertion and cancellation unchanged.
+the native reorder handler's n-pages > 1 restriction and detach on Wayland
+GDK_DRAG_CANCEL_ERROR, used for rejected drops. Wayland compositor cancellation
+(including Escape) can report the same error and therefore also detach; this
+tradeoff is intentional. Explicit USER_CANCELLED and non-Wayland errors retain
+the original restore behavior. The existing library handles drag icons, data
+transfer and ordered insertion.
 Its drag-distance threshold and pinned-tab behavior are unchanged.
 
 Library and development files install only below the application's private /opt

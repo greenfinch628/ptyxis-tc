@@ -2,7 +2,7 @@
 %global tc_prefix /opt/ptyxis-tab-colors-50.1
 Name: ptyxis-tc
 Version: 50.2
-Release: 9%{?dist}
+Release: 10%{?dist}
 Summary: Ptyxis with hostname tab colors and right-click clipboard shortcuts
 License: GPL-3.0-or-later
 URL: https://github.com/greenfinch628/ptyxis-tc
@@ -63,6 +63,10 @@ rm -f %{buildroot}%{tc_prefix}/share/applications/mimeinfo.cache
 %{_datadir}/icons/hicolor/symbolic/apps/org.gnome.Ptyxis.TabColors-symbolic.svg
 
 %changelog
+* Thu Oct 29 2026 Bob Czys <greenfinch628@users.noreply.github.com> - 50.2-10
+- Open a detached window when another application rejects a tab on Wayland.
+- Wayland compositor cancellations may also detach; explicit user cancellation is retained.
+
 * Wed Oct 28 2026 Bob Czys <greenfinch628@users.noreply.github.com> - 50.2-9
 - Bundle a private libadwaita with the native single-tab drag restriction removed.
 - Defer empty-window destruction until native transfer notification completes.
