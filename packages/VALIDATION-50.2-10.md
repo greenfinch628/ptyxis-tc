@@ -41,9 +41,10 @@ https://github.com/GNOME/gtk/blob/4.22.5/gdk/wayland/gdkdrag-wayland.c
 
 ## Interactive validation
 
-A separate instance titled “Drop test 50.2-10” runs the installed package on
-Wayland with isolated config/state. Physical rejected-drop verification is
-pending the user's result. Existing terminal processes have not been closed.
+The user confirmed physical rejected-drop behavior works on Wayland with both
+one-tab and two-tab source windows using the installed update. The separate
+instance titled “Drop test 50.2-10” uses isolated config/state. Existing terminal
+processes have not been closed.
 
 ## Artifacts
 
