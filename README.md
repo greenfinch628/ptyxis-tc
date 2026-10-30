@@ -1,5 +1,12 @@
 # Ptyxis-TC
 
+## Authoritative repository
+
+Use [GitHub](https://github.com/greenfinch628/ptyxis-tc) and its `main` branch
+for installation on other PCs. Scopuli Gitea is the backup mirror. Historical
+release tags are retained for reference; use the current package instructions
+below when installing.
+
 An unofficial [Ptyxis](https://gitlab.gnome.org/chergert/ptyxis) fork with
 hostname-based tab colors, manual tab colors, and right-click copy/paste.
 
@@ -123,15 +130,15 @@ Verify the package from the repository root:
 Matching Debian source files and the Ubuntu build report are available on
 the release page. See the release notes for the source commit and package build details.
 
-## Local RPM on Scopuli
+## Fedora 44 package
 
 The current Fedora 44 x86_64 package is stored under `packages/fedora-44/`.
-Revision 7 includes the independent tab colors and master reset, and has been
-installed and verified on Scopuli, Rocinante, Karakum, and Narlikar. Build inputs
-and temporary outputs under `local-rpm/` remain excluded from Git.
+The current package is revision 10, including the tab drag and rejected-drop
+fixes. Build inputs and temporary outputs under `local-rpm/` remain excluded
+from Git.
 
 ```bash
-sudo dnf install ./packages/fedora-44/ptyxis-tc-50.2-7.fc44.x86_64.rpm
+sudo dnf install ./packages/fedora-44/ptyxis-tc-50.2-10.fc44.x86_64.rpm
 ```
 
 Close and reopen Ptyxis-TC after upgrading. Launch it from the application
