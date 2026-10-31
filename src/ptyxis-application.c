@@ -1408,6 +1408,38 @@ generate_debug_info (PtyxisApplication *self)
   return g_string_free (str, FALSE);
 }
 
+/* Label the section containing the upstream website without depending on
+ * libadwaita's private template child names. Credits and legal stay upstream. */
+static gboolean
+label_upstream_section (GtkWidget *widget,
+                        const char *website)
+{
+  g_autofree char *uri = NULL;
+
+  /* The website row's type is private, but its URI is a GObject property. */
+  if (g_object_class_find_property (G_OBJECT_GET_CLASS (widget), "uri") != NULL)
+    g_object_get (widget, "uri", &uri, NULL);
+
+  if (g_strcmp0 (uri, website) == 0)
+    {
+      GtkWidget *group = gtk_widget_get_ancestor (widget, ADW_TYPE_PREFERENCES_GROUP);
+
+      if (group != NULL)
+        {
+          adw_preferences_group_set_title (ADW_PREFERENCES_GROUP (group), _("Upstream:"));
+          return TRUE;
+        }
+    }
+
+  for (GtkWidget *child = gtk_widget_get_first_child (widget);
+       child != NULL;
+       child = gtk_widget_get_next_sibling (child))
+    if (label_upstream_section (child, website))
+      return TRUE;
+
+  return FALSE;
+}
+
 static void
 ptyxis_application_about (GSimpleAction *action,
                           GVariant      *param,
@@ -1417,6 +1449,7 @@ ptyxis_application_about (GSimpleAction *action,
   static const char *artists[] = {"Jakub Steiner", NULL};
   PtyxisApplication *self = user_data;
   GtkWindow *window = NULL;
+  AdwDialog *about;
   g_autofree char *debug_info = NULL;
 
   g_assert (PTYXIS_IS_APPLICATION (self));
@@ -1424,13 +1457,12 @@ ptyxis_application_about (GSimpleAction *action,
   window = gtk_application_get_active_window (GTK_APPLICATION (self));
   debug_info = generate_debug_info (self);
 
-  adw_show_about_dialog (GTK_WIDGET (window),
+  about = g_object_new (ADW_TYPE_ABOUT_DIALOG,
                          "application-icon", PACKAGE_ICON_NAME,
-                         "application-name", ptyxis_app_name (),
+                         "application-name", "Ptyxis-tc",
                          "artists", artists,
                          "copyright", "© 2023-2024 Christian Hergert, et al.",
                          "debug-info", debug_info,
-                         "developer-name", "Christian Hergert",
                          "developers", developers,
                          "issue-url", "https://gitlab.gnome.org/chergert/ptyxis/issues",
                          "license-type", GTK_LICENSE_GPL_3_0,
@@ -1438,6 +1470,10 @@ ptyxis_application_about (GSimpleAction *action,
                          "version", PACKAGE_VERSION,
                          "website", "https://gitlab.gnome.org/chergert/ptyxis",
                          NULL);
+
+  label_upstream_section (adw_dialog_get_child (about),
+                          adw_about_dialog_get_website (ADW_ABOUT_DIALOG (about)));
+  adw_dialog_present (about, GTK_WIDGET (window));
 }
 
 static void

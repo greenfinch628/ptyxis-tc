@@ -1,5 +1,6 @@
 # ptyxis-tc - 50.2-10
 
+- 2026-10-31T21:34:35Z — Changed: Identify About as Ptyxis-tc with its application version, remove the developer subtitle, and label the upstream links, credits, and legal section.
 - 2026-10-30T00:51:33Z — Changed: Designate GitHub main as authoritative and Gitea as its backup mirror; clarify installation source and merged-branch cleanup.
 
 - 2026-10-29T14:06:19Z — Fixed: Open dragged tabs in a new window when another app rejects them on Wayland; the indistinguishable compositor cancellation also detaches, while explicit user cancellation still restores the tab.
