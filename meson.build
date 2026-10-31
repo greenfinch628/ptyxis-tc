@@ -84,7 +84,8 @@ config_h.set_quoted('APP_SCHEMA_PATH', app_schema_path)
 config_h.set_quoted('APP_SCHEMA_PROFILE_ID', app_schema_profile_id)
 config_h.set_quoted('APP_SCHEMA_SHORTCUTS_ID', app_schema_shortcuts_id)
 config_h.set_quoted('APP_SCHEMA_SHORTCUTS_PATH', app_schema_shortcuts_path)
-config_h.set_quoted('PACKAGE_VERSION', meson.project_version())
+# Include the Ptyxis-TC revision in About and diagnostic information.
+config_h.set_quoted('PACKAGE_VERSION', meson.project_version() + '-10')
 config_h.set_quoted('GETTEXT_PACKAGE', 'ptyxis')
 config_h.set_quoted('LOCALEDIR', get_option('prefix') / get_option('localedir'))
 # LIBEXECDIR must be expanded in config.h

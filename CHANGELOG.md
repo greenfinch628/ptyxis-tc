@@ -1,5 +1,7 @@
 # ptyxis-tc - 50.2-10
 
+- 2026-10-31T22:52:40Z — Fixed: Show the full Ptyxis-TC version 50.2-10 in About and diagnostic information.
+
 - 2026-10-31T21:39:12Z — Changed: Built and installed the Ptyxis-tc About identity and Upstream heading update locally in /opt/ptyxis-tab-colors-50.1 and updated the local source checkout.
 - 2026-10-31T21:34:35Z — Changed: Identify About as Ptyxis-tc with its application version, remove the developer subtitle, and label the upstream links, credits, and legal section.
 - 2026-10-30T00:51:33Z — Changed: Designate GitHub main as authoritative and Gitea as its backup mirror; clarify installation source and merged-branch cleanup.
